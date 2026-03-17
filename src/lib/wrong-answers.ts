@@ -1,3 +1,8 @@
+import { supabase } from './supabase';
+
+// TODO: 로그인 연동 후 실제 user_id로 교체
+const TEMP_USER_ID = 1;
+
 export interface WrongAnswer {
   questionId: number;
   grade: number;
@@ -8,71 +13,99 @@ export interface WrongAnswer {
   selectedOption: number;
   explanation: string;
   difficulty: string;
-  timestamp: number;
-  streak: number; // 연속 정답 횟수 (로직+정답 모두 맞춘 횟수)
+  wrongCount: number;
+  streak: number; // consecutive_correct
+  status: string; // 'Learning' | 'Mastered'
 }
 
-const STORAGE_KEY = "grammar_wrong_answers";
-
-export function getWrongAnswers(): WrongAnswer[] {
-  if (typeof window === "undefined") return [];
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return [];
-  return JSON.parse(raw).map((w: WrongAnswer) => ({
-    ...w,
-    streak: w.streak ?? 0,
-  }));
+interface DbWrongAnswer {
+  id: number;
+  user_id: number;
+  question_id: number;
+  selected_option: number;
+  wrong_count: number;
+  consecutive_correct: number;
+  status: string;
+  last_wrong_at: string;
+  grammar_questions: {
+    id: number;
+    grade: number;
+    logic_no: number;
+    question: string;
+    options: string[];
+    answer: number;
+    explanation: string;
+    difficulty: string;
+  };
 }
 
-function saveWrongAnswers(list: WrongAnswer[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+function toWrongAnswer(row: DbWrongAnswer): WrongAnswer {
+  const q = row.grammar_questions;
+  return {
+    questionId: q.id,
+    grade: q.grade,
+    logicNo: q.logic_no,
+    question: q.question,
+    options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+    answer: q.answer,
+    selectedOption: row.selected_option,
+    explanation: q.explanation,
+    difficulty: q.difficulty,
+    wrongCount: row.wrong_count,
+    streak: row.consecutive_correct,
+    status: row.status,
+  };
 }
 
-export function addWrongAnswer(item: WrongAnswer) {
-  const list = getWrongAnswers();
-  const idx = list.findIndex((w) => w.questionId === item.questionId);
-  if (idx === -1) {
-    list.push({ ...item, streak: 0 });
-  } else {
-    // 다시 틀리면 streak 리셋
-    list[idx].streak = 0;
-    list[idx].selectedOption = item.selectedOption;
-    list[idx].timestamp = item.timestamp;
-  }
-  saveWrongAnswers(list);
+export async function getWrongAnswers(): Promise<WrongAnswer[]> {
+  const { data, error } = await supabase
+    .from('grammar_wrong_answers')
+    .select(`
+      id, user_id, question_id, selected_option,
+      wrong_count, consecutive_correct, status, last_wrong_at,
+      grammar_questions (
+        id, grade, logic_no, question, options, answer, explanation, difficulty
+      )
+    `)
+    .eq('user_id', TEMP_USER_ID)
+    .eq('status', 'Learning')
+    .order('last_wrong_at', { ascending: false });
+
+  if (error || !data) return [];
+  return (data as unknown as DbWrongAnswer[]).map(toWrongAnswer);
 }
 
-// 오답노트 복습에서 로직+정답 모두 맞춘 경우
-export function recordCorrectReview(questionId: number): boolean {
-  const list = getWrongAnswers();
-  const idx = list.findIndex((w) => w.questionId === questionId);
-  if (idx === -1) return false;
+export async function getWrongAnswerCount(): Promise<number> {
+  const { count, error } = await supabase
+    .from('grammar_wrong_answers')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', TEMP_USER_ID)
+    .eq('status', 'Learning');
 
-  list[idx].streak += 1;
-  if (list[idx].streak >= 3) {
-    list.splice(idx, 1);
-    saveWrongAnswers(list);
-    return true; // 삭제됨
-  }
-  saveWrongAnswers(list);
-  return false;
+  if (error) return 0;
+  return count ?? 0;
 }
 
-// 오답노트 복습에서 틀린 경우 (로직 또는 정답)
-export function recordWrongReview(questionId: number) {
-  const list = getWrongAnswers();
-  const idx = list.findIndex((w) => w.questionId === questionId);
-  if (idx !== -1) {
-    list[idx].streak = 0;
-    saveWrongAnswers(list);
-  }
+export async function addWrongAnswer(questionId: number, selectedOption: number): Promise<void> {
+  await supabase.rpc('grammar_increment_wrong', {
+    p_user_id: TEMP_USER_ID,
+    p_question_id: questionId,
+    p_selected_option: selectedOption,
+  });
 }
 
-export function removeWrongAnswer(questionId: number) {
-  const list = getWrongAnswers().filter((w) => w.questionId !== questionId);
-  saveWrongAnswers(list);
+export async function recordCorrectReview(questionId: number): Promise<boolean> {
+  const { data } = await supabase.rpc('grammar_record_correct_review', {
+    p_user_id: TEMP_USER_ID,
+    p_question_id: questionId,
+  });
+
+  return data === 'Mastered';
 }
 
-export function getWrongAnswerCount(): number {
-  return getWrongAnswers().length;
+export async function recordWrongReview(questionId: number): Promise<void> {
+  await supabase.rpc('grammar_record_wrong_review', {
+    p_user_id: TEMP_USER_ID,
+    p_question_id: questionId,
+  });
 }

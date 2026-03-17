@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { GrammarQuestion } from "@/lib/types";
 import { addWrongAnswer } from "@/lib/wrong-answers";
+import { incrementCompletion } from "@/lib/completion";
 
 const gradeLabels: Record<number, string> = {
   7: "Bronze", 8: "Silver", 9: "Gold", 10: "Platinum", 11: "Diamond", 12: "Grandmaster",
@@ -34,6 +35,7 @@ type State = {
   isAnswered: boolean;
   score: number;
   isComplete: boolean;
+  justCompleted: boolean;
   loading: boolean;
 };
 
@@ -52,19 +54,7 @@ function reducer(state: State, action: Action): State {
       const q = state.questions[state.currentIndex];
       const correct = action.option === q.answer;
       if (!correct) {
-        addWrongAnswer({
-          questionId: q.id,
-          grade: q.grade,
-          logicNo: q.logic_no,
-          question: q.question,
-          options: q.options,
-          answer: q.answer,
-          selectedOption: action.option,
-          explanation: q.explanation,
-          difficulty: q.difficulty,
-          timestamp: Date.now(),
-          streak: 0,
-        });
+        addWrongAnswer(q.id, action.option);
       }
       return {
         ...state,
@@ -76,7 +66,7 @@ function reducer(state: State, action: Action): State {
     case "NEXT": {
       const nextIndex = state.currentIndex + 1;
       if (nextIndex >= state.questions.length) {
-        return { ...state, isComplete: true };
+        return { ...state, isComplete: true, justCompleted: true };
       }
       return {
         ...state,
@@ -106,6 +96,7 @@ const initialState: State = {
   isAnswered: false,
   score: 0,
   isComplete: false,
+  justCompleted: false,
   loading: true,
 };
 
@@ -114,6 +105,12 @@ export default function QuizPage() {
   const grade = parseInt(params.grade as string);
   const logicNo = parseInt(params.logicNo as string);
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(() => {
+    if (state.justCompleted) {
+      incrementCompletion(grade, logicNo);
+    }
+  }, [state.justCompleted, grade, logicNo]);
 
   useEffect(() => {
     async function fetchQuestions() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   WrongAnswer,
@@ -53,10 +53,17 @@ export default function WrongAnswersPage() {
   const [answerStates, setAnswerStates] = useState<Record<number, AnswerState>>({});
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
   const [selectedLogic, setSelectedLogic] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadItems = useCallback(async () => {
+    const data = await getWrongAnswers();
+    setItems(data);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    setItems(getWrongAnswers());
-  }, []);
+    loadItems();
+  }, [loadItems]);
 
   const filtered = items.filter((item) => {
     if (selectedGrade && item.grade !== selectedGrade) return false;
@@ -65,7 +72,6 @@ export default function WrongAnswersPage() {
   });
 
   const grades = [...new Set(items.map((i) => i.grade))].sort();
-  const logics = [...new Set(items.map((i) => i.logicNo))].sort();
 
   function getState(id: number): AnswerState {
     return answerStates[id] || initialAnswerState;
@@ -83,7 +89,6 @@ export default function WrongAnswersPage() {
       setExpandedId(null);
     } else {
       setExpandedId(id);
-      // 새로 열 때 초기화
       setAnswerStates((prev) => ({ ...prev, [id]: initialAnswerState }));
     }
   }
@@ -94,7 +99,7 @@ export default function WrongAnswersPage() {
     updateState(item.questionId, { step: "answer" });
   }
 
-  function handleSubmit(item: WrongAnswer) {
+  async function handleSubmit(item: WrongAnswer) {
     const st = getState(item.questionId);
     if (st.selectedOption === null) return;
 
@@ -103,15 +108,18 @@ export default function WrongAnswersPage() {
     const bothCorrect = logicCorrect && answerCorrect;
 
     if (bothCorrect) {
-      const removed = recordCorrectReview(item.questionId);
-      if (removed) {
+      const mastered = await recordCorrectReview(item.questionId);
+      if (mastered) {
         setTimeout(() => {
-          setItems(getWrongAnswers());
+          loadItems();
           setExpandedId(null);
         }, 1500);
+      } else {
+        await loadItems();
       }
     } else {
-      recordWrongReview(item.questionId);
+      await recordWrongReview(item.questionId);
+      await loadItems();
     }
 
     updateState(item.questionId, {
@@ -119,8 +127,14 @@ export default function WrongAnswersPage() {
       logicCorrect,
       answerCorrect,
     });
+  }
 
-    setItems(getWrongAnswers());
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-gray-400">불러오는 중...</div>
+      </div>
+    );
   }
 
   if (items.length === 0) {
@@ -139,7 +153,7 @@ export default function WrongAnswersPage() {
       <div className="mb-6">
         <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; 홈</Link>
         <h1 className="text-xl font-bold text-gray-900 mt-2">오답노트</h1>
-        <p className="text-gray-500 text-sm">틀린 문제 {items.length}개 (로직+정답 연속 3회 정답 시 자동 삭제)</p>
+        <p className="text-gray-500 text-sm">틀린 문제 {items.length}개 (로직+정답 연속 3회 정답 시 자동 졸업)</p>
       </div>
 
       {/* 오답 다시 풀기 버튼 */}

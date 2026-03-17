@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   WrongAnswer,
@@ -42,90 +42,11 @@ type State = {
   score: number;
   removedCount: number;
   isComplete: boolean;
+  loading: boolean;
 };
 
-type Action =
-  | { type: "SET_QUESTIONS"; questions: WrongAnswer[] }
-  | { type: "SELECT_LOGIC"; logic: number }
-  | { type: "SELECT_ANSWER"; option: number }
-  | { type: "NEXT" }
-  | { type: "RESET" };
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case "SET_QUESTIONS":
-      return { ...state, questions: action.questions };
-    case "SELECT_LOGIC": {
-      if (state.step !== "logic") return state;
-      const q = state.questions[state.currentIndex];
-      const correct = action.logic === q.logicNo;
-      return {
-        ...state,
-        selectedLogic: action.logic,
-        logicCorrect: correct,
-        step: "answer",
-      };
-    }
-    case "SELECT_ANSWER": {
-      if (state.step !== "answer") return state;
-      const q = state.questions[state.currentIndex];
-      const answerCorrect = action.option === q.answer;
-      const bothCorrect = state.logicCorrect && answerCorrect;
-
-      let removedCount = state.removedCount;
-      if (bothCorrect) {
-        const removed = recordCorrectReview(q.questionId);
-        if (removed) removedCount += 1;
-      } else {
-        recordWrongReview(q.questionId);
-      }
-
-      return {
-        ...state,
-        selectedOption: action.option,
-        answerCorrect,
-        step: "result",
-        score: bothCorrect ? state.score + 1 : state.score,
-        removedCount,
-      };
-    }
-    case "NEXT": {
-      const nextIndex = state.currentIndex + 1;
-      if (nextIndex >= state.questions.length) {
-        return { ...state, isComplete: true };
-      }
-      return {
-        ...state,
-        currentIndex: nextIndex,
-        step: "logic",
-        selectedLogic: null,
-        selectedOption: null,
-        logicCorrect: false,
-        answerCorrect: false,
-      };
-    }
-    case "RESET": {
-      const fresh = getWrongAnswers();
-      return {
-        questions: fresh,
-        currentIndex: 0,
-        step: "logic",
-        selectedLogic: null,
-        selectedOption: null,
-        logicCorrect: false,
-        answerCorrect: false,
-        score: 0,
-        removedCount: 0,
-        isComplete: false,
-      };
-    }
-    default:
-      return state;
-  }
-}
-
 export default function ReviewPage() {
-  const [state, dispatch] = useReducer(reducer, {
+  const [state, setState] = useState<State>({
     questions: [],
     currentIndex: 0,
     step: "logic",
@@ -136,11 +57,95 @@ export default function ReviewPage() {
     score: 0,
     removedCount: 0,
     isComplete: false,
+    loading: true,
   });
 
-  useEffect(() => {
-    dispatch({ type: "SET_QUESTIONS", questions: getWrongAnswers() });
+  const loadQuestions = useCallback(async () => {
+    const data = await getWrongAnswers();
+    setState((prev) => ({ ...prev, questions: data, loading: false }));
   }, []);
+
+  useEffect(() => {
+    loadQuestions();
+  }, [loadQuestions]);
+
+  function selectLogic(logic: number) {
+    if (state.step !== "logic") return;
+    const q = state.questions[state.currentIndex];
+    const correct = logic === q.logicNo;
+    setState((prev) => ({
+      ...prev,
+      selectedLogic: logic,
+      logicCorrect: correct,
+      step: "answer",
+    }));
+  }
+
+  async function selectAnswer(option: number) {
+    if (state.step !== "answer") return;
+    const q = state.questions[state.currentIndex];
+    const answerCorrect = option === q.answer;
+    const bothCorrect = state.logicCorrect && answerCorrect;
+
+    let removedCount = state.removedCount;
+    if (bothCorrect) {
+      const mastered = await recordCorrectReview(q.questionId);
+      if (mastered) removedCount += 1;
+    } else {
+      await recordWrongReview(q.questionId);
+    }
+
+    setState((prev) => ({
+      ...prev,
+      selectedOption: option,
+      answerCorrect,
+      step: "result",
+      score: bothCorrect ? prev.score + 1 : prev.score,
+      removedCount,
+    }));
+  }
+
+  function next() {
+    const nextIndex = state.currentIndex + 1;
+    if (nextIndex >= state.questions.length) {
+      setState((prev) => ({ ...prev, isComplete: true }));
+      return;
+    }
+    setState((prev) => ({
+      ...prev,
+      currentIndex: nextIndex,
+      step: "logic",
+      selectedLogic: null,
+      selectedOption: null,
+      logicCorrect: false,
+      answerCorrect: false,
+    }));
+  }
+
+  async function reset() {
+    const fresh = await getWrongAnswers();
+    setState({
+      questions: fresh,
+      currentIndex: 0,
+      step: "logic",
+      selectedLogic: null,
+      selectedOption: null,
+      logicCorrect: false,
+      answerCorrect: false,
+      score: 0,
+      removedCount: 0,
+      isComplete: false,
+      loading: false,
+    });
+  }
+
+  if (state.loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-gray-400">불러오는 중...</div>
+      </div>
+    );
+  }
 
   if (state.questions.length === 0) {
     return (
@@ -173,7 +178,7 @@ export default function ReviewPage() {
         </div>
         <div className="flex gap-3 justify-center">
           <button
-            onClick={() => dispatch({ type: "RESET" })}
+            onClick={reset}
             className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
           >
             다시 복습
@@ -254,7 +259,7 @@ export default function ReviewPage() {
             {Object.entries(logicNames).map(([key, name]) => (
               <button
                 key={key}
-                onClick={() => dispatch({ type: "SELECT_LOGIC", logic: parseInt(key) })}
+                onClick={() => selectLogic(parseInt(key))}
                 className="w-full text-left px-4 py-3 rounded-xl border-2 border-gray-200 bg-white font-medium hover:border-blue-300 transition-all cursor-pointer"
               >
                 L{key} {name}
@@ -282,7 +287,7 @@ export default function ReviewPage() {
             {question.options.map((option, idx) => (
               <button
                 key={idx}
-                onClick={() => dispatch({ type: "SELECT_ANSWER", option: idx + 1 })}
+                onClick={() => selectAnswer(idx + 1)}
                 className="w-full text-left px-4 py-3 rounded-xl border-2 border-gray-200 bg-white font-medium hover:border-blue-300 transition-all cursor-pointer"
               >
                 {option}
@@ -339,7 +344,7 @@ export default function ReviewPage() {
 
           {/* Next */}
           <button
-            onClick={() => dispatch({ type: "NEXT" })}
+            onClick={next}
             className="w-full py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors"
           >
             {state.currentIndex < state.questions.length - 1 ? "다음 문제" : "결과 보기"}
