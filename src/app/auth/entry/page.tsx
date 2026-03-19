@@ -51,7 +51,7 @@ function EntryForm() {
 
                 // 디버그 정보 항상 표시
                 if (data.debug) {
-                    setDebugInfo({ ...data.debug, loginInfo: data.loginInfo })
+                    setDebugInfo({ ...data.debug, loginInfo: data.loginInfo, message: data.message })
                 } else {
                     setDebugInfo({ error: data.message, rawResponse: JSON.stringify(data) } as DebugInfo)
                 }

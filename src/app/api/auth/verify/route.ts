@@ -63,12 +63,12 @@ export async function POST(request: NextRequest) {
         try {
             decrypted = xorDecrypt(encrypted, secretKey)
         } catch {
-            return sendError('[E3] 복호화 실패', IPSI_NAVI_URL, isJsonRequest)
+            return sendError('[E3] 복호화 실패', IPSI_NAVI_URL, isJsonRequest, { payload })
         }
 
         const parts = decrypted.split('|')
         if (parts.length < 3) {
-            return sendError(`[E4] 형식 오류 (parts=${parts.length})`, IPSI_NAVI_URL, isJsonRequest)
+            return sendError(`[E4] 형식 오류 (parts=${parts.length})`, IPSI_NAVI_URL, isJsonRequest, { decrypted, parts })
         }
 
         const nid = parts[0]
@@ -76,12 +76,12 @@ export async function POST(request: NextRequest) {
         const ts = parseInt(parts[2], 10)
 
         if (!nid || !name || isNaN(ts)) {
-            return sendError(`[E5] 값 누락 (nid=${nid}, name=${name}, ts=${ts})`, IPSI_NAVI_URL, isJsonRequest)
+            return sendError(`[E5] 값 누락 (nid=${nid}, name=${name}, ts=${ts})`, IPSI_NAVI_URL, isJsonRequest, { decrypted, nid, name, ts })
         }
 
         const now = Math.floor(Date.now() / 1000)
         if (Math.abs(now - ts) > FIVE_MINUTES) {
-            return sendError('인증 시간이 만료되었습니다.', IPSI_NAVI_URL, isJsonRequest)
+            return sendError('인증 시간이 만료되었습니다.', IPSI_NAVI_URL, isJsonRequest, { decrypted, nid, name, ts, now, diff: Math.abs(now - ts) })
         }
 
         const email = `grammar_${nid}@inputnavi.internal`
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
                     .update({ status: '1' })
                     .eq('nid', nidNum)
             }
-            return sendError('탈퇴한 회원입니다. 입시내비에 문의하세요.', IPSI_NAVI_URL, isJsonRequest)
+            return sendError('탈퇴한 회원입니다. 입시내비에 문의하세요.', IPSI_NAVI_URL, isJsonRequest, { ipsiResult, ipsiStatus, decrypted, nid, name, ts, existingLogin })
         }
 
         let loginIdx: number
@@ -247,9 +247,9 @@ function htmlResponse(html: string) {
     })
 }
 
-function sendError(message: string, redirectUrl: string, isJson: boolean) {
+function sendError(message: string, redirectUrl: string, isJson: boolean, debug?: unknown) {
     if (isJson) {
-        return NextResponse.json({ ok: false, message }, { status: 401 })
+        return NextResponse.json({ ok: false, message, debug }, { status: 401 })
     }
     return htmlResponse(`<!DOCTYPE html>
 <html lang="ko">
