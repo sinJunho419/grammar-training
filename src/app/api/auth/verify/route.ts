@@ -22,15 +22,6 @@ function xorDecrypt(encrypted: Buffer, key: string): string {
     return result.toString('utf8')
 }
 
-function xorEncryptToBase64(plaintext: string, key: string): string {
-    const textBytes = Buffer.from(plaintext, 'utf8')
-    const keyBytes = Buffer.from(key, 'utf8')
-    const result = Buffer.alloc(textBytes.length)
-    for (let i = 0; i < textBytes.length; i++) {
-        result[i] = textBytes[i] ^ keyBytes[i % keyBytes.length]
-    }
-    return result.toString('base64')
-}
 
 export async function POST(request: NextRequest) {
     const IPSI_NAVI_URL = process.env.IPSI_NAVI_URL || 'https://ipsinavi.com'
@@ -63,12 +54,12 @@ export async function POST(request: NextRequest) {
         try {
             decrypted = xorDecrypt(encrypted, secretKey)
         } catch {
-            return sendError('[E3] 복호화 실패', IPSI_NAVI_URL, isJsonRequest, { payload })
+            return sendError('[E3] 복호화 실패', IPSI_NAVI_URL, isJsonRequest)
         }
 
         const parts = decrypted.split('|')
         if (parts.length < 3) {
-            return sendError(`[E4] 형식 오류 (parts=${parts.length})`, IPSI_NAVI_URL, isJsonRequest, { decrypted, parts })
+            return sendError(`[E4] 형식 오류 (parts=${parts.length})`, IPSI_NAVI_URL, isJsonRequest)
         }
 
         const nid = parts[0]
@@ -76,12 +67,12 @@ export async function POST(request: NextRequest) {
         const ts = parseInt(parts[2], 10)
 
         if (!nid || !name || isNaN(ts)) {
-            return sendError(`[E5] 값 누락 (nid=${nid}, name=${name}, ts=${ts})`, IPSI_NAVI_URL, isJsonRequest, { decrypted, nid, name, ts })
+            return sendError(`[E5] 값 누락 (nid=${nid}, name=${name}, ts=${ts})`, IPSI_NAVI_URL, isJsonRequest)
         }
 
         const now = Math.floor(Date.now() / 1000)
         if (Math.abs(now - ts) > FIVE_MINUTES) {
-            return sendError('인증 시간이 만료되었습니다.', IPSI_NAVI_URL, isJsonRequest, { decrypted, nid, name, ts, now, diff: Math.abs(now - ts) })
+            return sendError('인증 시간이 만료되었습니다.', IPSI_NAVI_URL, isJsonRequest)
         }
 
         const email = `grammar_${nid}@inputnavi.internal`
@@ -123,7 +114,7 @@ export async function POST(request: NextRequest) {
                     .update({ status: '1' })
                     .eq('nid', nidNum)
             }
-            return sendError('탈퇴한 회원입니다. 입시내비에 문의하세요.', IPSI_NAVI_URL, isJsonRequest, { ipsiResult, ipsiStatus, decrypted, nid, name, ts, existingLogin, sentPayload: payload })
+            return sendError('탈퇴한 회원입니다. 입시내비에 문의하세요.', IPSI_NAVI_URL, isJsonRequest)
         }
 
         let loginIdx: number
@@ -221,7 +212,7 @@ export async function POST(request: NextRequest) {
         const redirectUrl = `/?welcome=${encodeURIComponent(displayName)}`
 
         if (isJsonRequest) {
-            return NextResponse.json({ ok: true, redirectUrl, loginInfo, debug: { ipsiResult, decrypted, nid, name, ts } })
+            return NextResponse.json({ ok: true, redirectUrl, loginInfo })
         }
 
         return htmlResponse(`<!DOCTYPE html>
@@ -246,9 +237,9 @@ function htmlResponse(html: string) {
     })
 }
 
-function sendError(message: string, redirectUrl: string, isJson: boolean, debug?: unknown) {
+function sendError(message: string, redirectUrl: string, isJson: boolean) {
     if (isJson) {
-        return NextResponse.json({ ok: false, message, debug }, { status: 401 })
+        return NextResponse.json({ ok: false, message }, { status: 401 })
     }
     return htmlResponse(`<!DOCTYPE html>
 <html lang="ko">
