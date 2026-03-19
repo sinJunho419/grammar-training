@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
         const redirectUrl = `/?welcome=${encodeURIComponent(displayName)}`
 
         if (isJsonRequest) {
-            return NextResponse.json({ ok: true, redirectUrl, loginInfo })
+            return NextResponse.json({ ok: true, redirectUrl, loginInfo, debug: { ipsiResult, decrypted, nid, name, ts } })
         }
 
         return htmlResponse(`<!DOCTYPE html>
