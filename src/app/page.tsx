@@ -105,7 +105,6 @@ export default function Home() {
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
             <span className="text-3xl mb-1 drop-shadow-md">{icon}</span>
             <span className="text-white font-bold text-base tracking-wide drop-shadow-sm">{label}</span>
-            <span className="text-white/80 text-xs mt-0.5">{sub}</span>
           </Link>
         ))}
       </div>

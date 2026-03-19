@@ -14,16 +14,12 @@ function SsoRedirector() {
 
         if (!nid || !token) return
 
-        const timer = setTimeout(() => {
-            const url = new URL('/api/auth/sso', window.location.origin)
-            url.searchParams.set('nid', nid)
-            url.searchParams.set('token', token)
-            if (sname) url.searchParams.set('sname', sname)
-            if (userId) url.searchParams.set('user_id', userId)
-            window.location.href = url.toString()
-        }, 1200)
-
-        return () => clearTimeout(timer)
+        const url = new URL('/api/auth/sso', window.location.origin)
+        url.searchParams.set('nid', nid)
+        url.searchParams.set('token', token)
+        if (sname) url.searchParams.set('sname', sname)
+        if (userId) url.searchParams.set('user_id', userId)
+        window.location.href = url.toString()
     }, [params])
 
     return null

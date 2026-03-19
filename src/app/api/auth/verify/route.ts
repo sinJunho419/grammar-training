@@ -78,22 +78,27 @@ export async function POST(request: NextRequest) {
         const email = `grammar_${nid}@inputnavi.internal`
         const displayName = name || `학생_${nid}`
 
-        console.log(`[auth:grammar] ${nid} 시작 +${Date.now() - t0}ms`)
-
-        // 입시내비 API + DB 조회 병렬 (원본 payload 그대로 전달)
+        const admin = getAdminClient()
         const nidNum = parseInt(nid, 10)
 
-        const [ipsiResult, dbResult] = await Promise.all([
+        console.log(`[auth:grammar] ${nid} 시작 +${Date.now() - t0}ms`)
+
+        // 입시내비 API + DB 조회 + generateLink 3개 병렬
+        const [ipsiResult, dbResult, linkResult] = await Promise.all([
             fetch('https://m.ipsinavi.com/ipsivoca_Api.asp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `payload=${encodeURIComponent(payload)}`,
             }).then(r => r.json()).catch(() => null),
-            getAdminClient()
+            admin
                 .from('ipsinavi_Login_grammar')
                 .select('idx, name, NsiteID, Scomment, status')
                 .eq('nid', nidNum)
                 .single(),
+            admin.auth.admin.generateLink({
+                type: 'magiclink',
+                email,
+            }),
         ])
 
         let ipsiStatus = 'active'
@@ -109,52 +114,54 @@ export async function POST(request: NextRequest) {
 
         if (ipsiStatus !== 'active') {
             if (existingLogin) {
-                await getAdminClient()
+                admin
                     .from('ipsinavi_Login_grammar')
                     .update({ status: '1' })
                     .eq('nid', nidNum)
+                    .then(() => {})
             }
             return sendError('탈퇴한 회원입니다. 입시내비에 문의하세요.', IPSI_NAVI_URL, isJsonRequest)
         }
 
-        let loginIdx: number
+        // DB 업데이트와 세션 생성을 병렬로 처리
+        let loginIdx!: number
+        const dbUpdatePromise = (async () => {
+            if (!existingLogin) {
+                const { data: inserted } = await admin.from('ipsinavi_Login_grammar').insert({
+                    nid: nidNum,
+                    name: displayName,
+                    NsiteID: ipsiNsiteID,
+                    Scomment: ipsiScomment,
+                    status: '0',
+                }).select('idx').single()
+                loginIdx = inserted!.idx
+                console.log(`[auth:grammar] ${nid} INSERT (idx=${loginIdx}) +${Date.now() - t0}ms`)
+            } else {
+                loginIdx = existingLogin.idx
+                const updates: Record<string, unknown> = { status: '0' }
+                if (existingLogin.name !== displayName) updates.name = displayName
+                if (ipsiNsiteID !== null && existingLogin.NsiteID !== ipsiNsiteID) updates.NsiteID = ipsiNsiteID
+                if (ipsiScomment !== null && existingLogin.Scomment !== ipsiScomment) updates.Scomment = ipsiScomment
+                admin
+                    .from('ipsinavi_Login_grammar')
+                    .update(updates)
+                    .eq('nid', nidNum)
+                    .then(() => {
+                        console.log(`[auth:grammar] ${nid} UPDATE (idx=${loginIdx}) +${Date.now() - t0}ms`)
+                    })
+            }
+        })()
 
-        if (!existingLogin) {
-            const { data: inserted } = await getAdminClient().from('ipsinavi_Login_grammar').insert({
-                nid: nidNum,
-                name: displayName,
-                NsiteID: ipsiNsiteID,
-                Scomment: ipsiScomment,
-                status: '0',
-            }).select('idx').single()
-            loginIdx = inserted!.idx
-            console.log(`[auth:grammar] ${nid} INSERT (idx=${loginIdx}) +${Date.now() - t0}ms`)
-        } else {
-            loginIdx = existingLogin.idx
-            const updates: Record<string, unknown> = { status: '0' }
-            if (existingLogin.name !== displayName) updates.name = displayName
-            if (ipsiNsiteID !== null && existingLogin.NsiteID !== ipsiNsiteID) updates.NsiteID = ipsiNsiteID
-            if (ipsiScomment !== null && existingLogin.Scomment !== ipsiScomment) updates.Scomment = ipsiScomment
-            await getAdminClient()
-                .from('ipsinavi_Login_grammar')
-                .update(updates)
-                .eq('nid', nidNum)
-            console.log(`[auth:grammar] ${nid} UPDATE (idx=${loginIdx}) +${Date.now() - t0}ms`)
-        }
-
-        // generateLink 먼저 시도 (재방문 fast path)
-        let linkData = (await getAdminClient().auth.admin.generateLink({
-            type: 'magiclink',
-            email,
-        })).data
+        // generateLink 결과 처리 (이미 병렬로 실행됨)
+        let linkData = linkResult.data
 
         if (!linkData?.properties?.hashed_token) {
-            await getAdminClient().auth.admin.createUser({
+            await admin.auth.admin.createUser({
                 email,
                 email_confirm: true,
                 user_metadata: { nid, sname: displayName, source: 'grammar' },
             })
-            const retry = await getAdminClient().auth.admin.generateLink({
+            const retry = await admin.auth.admin.generateLink({
                 type: 'magiclink',
                 email,
             })
@@ -194,8 +201,11 @@ export async function POST(request: NextRequest) {
             return sendError('세션 설정에 실패했습니다.', IPSI_NAVI_URL, isJsonRequest)
         }
 
+        // DB 업데이트 완료 대기 (loginIdx 필요)
+        await dbUpdatePromise
+
         // fire-and-forget: user_metadata 저장
-        getAdminClient().auth.admin.updateUserById(supabaseUserId, {
+        admin.auth.admin.updateUserById(supabaseUserId, {
             user_metadata: { nid, sname: displayName, source: 'grammar', login_idx: loginIdx },
         }).catch(() => {})
 

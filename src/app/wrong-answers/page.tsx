@@ -151,9 +151,11 @@ export default function WrongAnswersPage() {
   return (
     <div>
       <div className="mb-6">
-        <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; 홈</Link>
-        <h1 className="text-xl font-bold text-gray-900 mt-2">오답노트</h1>
-        <p className="text-gray-500 text-sm">틀린 문제 {items.length}개 (로직+정답 연속 3회 정답 시 자동 졸업)</p>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold text-gray-900">오답노트</h1>
+          <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; 홈</Link>
+        </div>
+        <p className="text-gray-500 text-sm mt-1">(로직+정답 연속 3회 정답 시 자동 졸업)</p>
       </div>
 
       {/* 오답 다시 풀기 버튼 */}

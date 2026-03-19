@@ -55,39 +55,44 @@ export async function GET(request: NextRequest) {
     const email = `grammar_${nid}@inputnavi.internal`
     const displayName = sname || `학생_${nid}`
 
-    const { error: createError } = await adminClient.auth.admin.createUser({
-        email,
-        email_confirm: true,
-        user_metadata: {
-            nid,
-            sname: displayName,
-            external_user_id: userId,
-            source: 'grammar',
-        },
-    })
-
-    if (createError && !createError.message.includes('already been registered')) {
-        console.error('Auto-provisioning error:', createError.message)
-        return new NextResponse('Failed to provision user', { status: 500 })
-    }
-
-    if (createError?.message.includes('already been registered') && sname) {
-        const { data: users } = await adminClient.auth.admin.listUsers()
-        const existingUser = users?.users?.find(u => u.email === email)
-        if (existingUser) {
-            await adminClient.auth.admin.updateUserById(existingUser.id, {
-                user_metadata: { ...existingUser.user_metadata, sname, external_user_id: userId || existingUser.user_metadata?.external_user_id },
-            })
-        }
-    }
-
-    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+    // generateLink 먼저 시도 (기존 유저면 바로 성공 → fast path)
+    let linkData = (await adminClient.auth.admin.generateLink({
         type: 'magiclink',
         email,
-    })
+    })).data
 
-    if (linkError || !linkData?.properties?.hashed_token) {
-        console.error('generateLink error:', linkError?.message)
+    if (!linkData?.properties?.hashed_token) {
+        // 유저가 없으면 생성 후 재시도
+        const { error: createError } = await adminClient.auth.admin.createUser({
+            email,
+            email_confirm: true,
+            user_metadata: {
+                nid,
+                sname: displayName,
+                external_user_id: userId,
+                source: 'grammar',
+            },
+        })
+
+        if (createError && !createError.message.includes('already been registered')) {
+            console.error('Auto-provisioning error:', createError.message)
+            return new NextResponse('Failed to provision user', { status: 500 })
+        }
+
+        const retry = await adminClient.auth.admin.generateLink({
+            type: 'magiclink',
+            email,
+        })
+        linkData = retry.data
+    } else if (sname) {
+        // 기존 유저의 metadata 업데이트 (fire-and-forget)
+        adminClient.auth.admin.updateUserById(linkData.user.id, {
+            user_metadata: { ...linkData.user.user_metadata, sname, external_user_id: userId || linkData.user.user_metadata?.external_user_id },
+        }).catch(() => {})
+    }
+
+    if (!linkData?.properties?.hashed_token) {
+        console.error('generateLink failed after retry')
         return new NextResponse('Failed to create session', { status: 500 })
     }
 
