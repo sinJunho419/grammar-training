@@ -204,11 +204,17 @@ export async function GET(request: NextRequest) {
         console.log(`[auth:grammar] ${nid} 완료 +${Date.now() - t0}ms`)
 
         // 쿠키 설정 후 메인 페이지로 리다이렉트
-        const redirectUrl = new URL(`/?welcome=${encodeURIComponent(displayName)}`, origin)
+        const redirectUrl = new URL('/', origin)
         const response = NextResponse.redirect(redirectUrl)
         response.cookies.set('ipsinavi_grammar', JSON.stringify(loginInfo), {
             path: '/',
             maxAge: 86400,
+            secure: true,
+            sameSite: 'lax',
+        })
+        response.cookies.set('grammar_welcome', displayName, {
+            path: '/',
+            maxAge: 60,
             secure: true,
             sameSite: 'lax',
         })

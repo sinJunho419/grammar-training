@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
 
         console.log(`[auth:grammar] ${nid} 완료 +${Date.now() - t0}ms`)
 
-        const redirectUrl = `/?welcome=${encodeURIComponent(displayName)}`
+        const redirectUrl = `/`
 
         if (isJsonRequest) {
             return NextResponse.json({ ok: true, redirectUrl, loginInfo })
