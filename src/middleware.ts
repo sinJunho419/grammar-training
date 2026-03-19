@@ -13,9 +13,9 @@ export function middleware(request: NextRequest) {
 <head><meta charset="utf-8"><title>9대 로직 영문법</title></head>
 <body>
 <script>
-  alert("잘못된 접근입니다.");
+  alert("비정상 접근입니다.");
   window.close();
-  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0f172a;color:#fff;font-family:sans-serif;"><div style="text-align:center;"><h2>잘못된 접근입니다.</h2><p style="color:#94a3b8;">이 창을 닫아주세요.</p></div></div>';
+  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0f172a;color:#fff;font-family:sans-serif;"><div style="text-align:center;"><h2>비정상 접근입니다.</h2><p style="color:#94a3b8;">입시내비를 통해 접근해주세요.</p></div></div>';
 </script>
 </body>
 </html>`,
@@ -31,6 +31,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
+        '/',
         '/grade/:path*',
         '/wrong-answers/:path*',
     ],
