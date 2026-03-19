@@ -89,15 +89,14 @@ export async function POST(request: NextRequest) {
 
         console.log(`[auth:grammar] ${nid} 시작 +${Date.now() - t0}ms`)
 
-        // 입시내비 API + DB 조회 병렬
-        const verifyPayload = xorEncryptToBase64(decrypted, secretKey)
+        // 입시내비 API + DB 조회 병렬 (원본 payload 그대로 전달)
         const nidNum = parseInt(nid, 10)
 
         const [ipsiResult, dbResult] = await Promise.all([
             fetch('https://m.ipsinavi.com/ipsivoca_Api.asp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `payload=${encodeURIComponent(verifyPayload)}`,
+                body: `payload=${encodeURIComponent(payload)}`,
             }).then(r => r.json()).catch(() => null),
             getAdminClient()
                 .from('ipsinavi_Login_grammar')
@@ -124,7 +123,7 @@ export async function POST(request: NextRequest) {
                     .update({ status: '1' })
                     .eq('nid', nidNum)
             }
-            return sendError('탈퇴한 회원입니다. 입시내비에 문의하세요.', IPSI_NAVI_URL, isJsonRequest, { ipsiResult, ipsiStatus, decrypted, nid, name, ts, existingLogin })
+            return sendError('탈퇴한 회원입니다. 입시내비에 문의하세요.', IPSI_NAVI_URL, isJsonRequest, { ipsiResult, ipsiStatus, decrypted, nid, name, ts, existingLogin, sentPayload: payload })
         }
 
         let loginIdx: number
