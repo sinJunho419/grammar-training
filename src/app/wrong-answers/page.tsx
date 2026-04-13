@@ -150,18 +150,15 @@ export default function WrongAnswersPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <Link href="/" className="text-xs text-slate-400 hover:text-primary-600 transition-colors">
-          &larr; 홈
-        </Link>
-        <h1 className="text-xl font-bold text-slate-900 mt-2">오답노트</h1>
-        <p className="text-slate-400 text-xs mt-1">로직+정답 연속 3회 정답 시 자동 졸업</p>
+      <div className="-mx-5 -mt-8 px-5 pt-8 pb-5 mb-5 bg-primary-50">
+        <h1 className="text-xl font-bold text-primary-900">오답노트</h1>
+        <p className="text-primary-500 text-xs mt-1">로직+정답 연속 3회 정답 시 자동 졸업</p>
       </div>
 
       {/* Review button */}
       <Link
         href="/wrong-answers/review"
-        className="flex items-center justify-center gap-2 w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors mb-6"
+        className="flex items-center justify-center gap-2 w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors mb-5"
       >
         오답 연속 풀기 ({items.length}문제)
       </Link>
@@ -194,7 +191,7 @@ export default function WrongAnswersPage() {
       </div>
 
       {/* Wrong answer list */}
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2.5 pb-16">
         {filtered.map((item) => {
           const st = getState(item.questionId);
           return (
@@ -287,7 +284,6 @@ export default function WrongAnswersPage() {
                   {/* STEP 3: Result */}
                   {st.step === "result" && (
                     <div>
-                      {/* Options display */}
                       <div className="flex flex-col gap-2 mb-4">
                         {item.options.map((option, idx) => {
                           const optionNum = idx + 1;
@@ -305,7 +301,6 @@ export default function WrongAnswersPage() {
                         })}
                       </div>
 
-                      {/* Logic result */}
                       <div className={`rounded-xl p-3 mb-3 ${st.logicCorrect ? "bg-emerald-50 border border-emerald-200" : "bg-rose-50 border border-rose-200"}`}>
                         <div className={`text-xs font-semibold ${st.logicCorrect ? "text-emerald-600" : "text-rose-500"}`}>
                           로직 {st.logicCorrect ? "정답" : "오답"}{!st.logicCorrect && " — 연속 기록 초기화"}
@@ -320,7 +315,6 @@ export default function WrongAnswersPage() {
                         )}
                       </div>
 
-                      {/* Answer result + explanation */}
                       <div className={`rounded-xl p-4 ${st.logicCorrect && st.answerCorrect ? "bg-emerald-50 border border-emerald-200" : "bg-rose-50 border border-rose-200"}`}>
                         {st.logicCorrect && st.answerCorrect ? (
                           <div className="text-emerald-600 text-sm font-semibold mb-2">
@@ -349,6 +343,16 @@ export default function WrongAnswersPage() {
           );
         })}
       </div>
+
+      {/* Floating back */}
+      <Link
+        href="/"
+        className="fixed bottom-6 left-6 w-11 h-11 bg-white border border-slate-200 rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 active:scale-90 transition-all z-50"
+      >
+        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </Link>
     </div>
   );
 }

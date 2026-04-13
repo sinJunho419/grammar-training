@@ -161,8 +161,8 @@ export default function ReviewPage() {
     const percentage = Math.round((state.score / state.questions.length) * 100);
     return (
       <div className="py-10">
-        <div className="text-center mb-8">
-          <h2 className="text-xl font-bold text-slate-900">복습 결과</h2>
+        <div className="-mx-5 -mt-10 px-5 pt-10 pb-5 mb-6 bg-primary-50">
+          <h2 className="text-xl font-bold text-primary-900">복습 결과</h2>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200/80 p-8 text-center mb-8">
@@ -179,7 +179,7 @@ export default function ReviewPage() {
           )}
         </div>
 
-        <div className="flex gap-2.5">
+        <div className="flex gap-2.5 pb-16">
           <button
             onClick={reset}
             className="flex-1 py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors"
@@ -193,6 +193,15 @@ export default function ReviewPage() {
             오답노트로
           </Link>
         </div>
+
+        <Link
+          href="/wrong-answers"
+          className="fixed bottom-6 left-6 w-11 h-11 bg-white border border-slate-200 rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 active:scale-90 transition-all z-50"
+        >
+          <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
       </div>
     );
   }
@@ -203,21 +212,21 @@ export default function ReviewPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <Link href="/wrong-answers" className="text-xs text-slate-400 hover:text-primary-600 transition-colors">
-          &larr; 오답노트
-        </Link>
-        <span className="text-xs text-slate-400">
-          {state.score}/{state.currentIndex + (state.step === "result" ? 1 : 0)}
-        </span>
-      </div>
+      <div className="-mx-5 -mt-8 px-5 pt-8 pb-4 mb-4 bg-primary-50">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-medium text-primary-700">오답 복습</span>
+          <span className="text-xs text-slate-400">
+            {state.score}/{state.currentIndex + (state.step === "result" ? 1 : 0)}
+          </span>
+        </div>
 
-      {/* Progress bar */}
-      <div className="w-full bg-slate-100 rounded-full h-1 mb-6">
-        <div
-          className="bg-primary-500 h-1 rounded-full transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        />
+        {/* Progress bar */}
+        <div className="w-full bg-primary-100 rounded-full h-1.5">
+          <div
+            className="bg-primary-500 h-1.5 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </div>
 
       {/* Question info */}
@@ -264,7 +273,7 @@ export default function ReviewPage() {
               <button
                 key={key}
                 onClick={() => selectLogic(parseInt(key))}
-                className="w-full text-left px-4 py-3 rounded-xl border border-slate-200/80 bg-white text-sm font-medium text-slate-700 hover:border-primary-300 transition-all cursor-pointer"
+                className="w-full text-left px-4 py-3 rounded-xl border border-slate-200/80 bg-white text-sm font-medium text-slate-700 hover:border-primary-300 hover:bg-primary-50/50 transition-all cursor-pointer"
               >
                 <span className="text-slate-400 mr-2">L{key}</span>{name}
               </button>
@@ -292,7 +301,7 @@ export default function ReviewPage() {
               <button
                 key={idx}
                 onClick={() => selectAnswer(idx + 1)}
-                className="w-full text-left px-4 py-3 rounded-xl border border-slate-200/80 bg-white text-sm font-medium text-slate-700 hover:border-primary-300 transition-all cursor-pointer"
+                className="w-full text-left px-4 py-3 rounded-xl border border-slate-200/80 bg-white text-sm font-medium text-slate-700 hover:border-primary-300 hover:bg-primary-50/50 transition-all cursor-pointer"
               >
                 {option}
               </button>
@@ -304,12 +313,10 @@ export default function ReviewPage() {
       {/* Result */}
       {state.step === "result" && (
         <div>
-          {/* Logic result */}
           <div className={`mb-2 text-xs font-semibold ${state.logicCorrect ? "text-emerald-600" : "text-rose-500"}`}>
             Step 1 로직: {state.logicCorrect ? "정답" : "오답"} — L{question.logicNo} {logicNames[question.logicNo]}
           </div>
 
-          {/* Answer options */}
           <div className="flex flex-col gap-2 mb-4">
             {question.options.map((option, idx) => {
               const optionNum = idx + 1;
@@ -327,7 +334,6 @@ export default function ReviewPage() {
             })}
           </div>
 
-          {/* Overall result + explanation */}
           <div className={`rounded-xl p-4 mb-5 ${state.logicCorrect && state.answerCorrect ? "bg-emerald-50 border border-emerald-200" : "bg-rose-50 border border-rose-200"}`}>
             <div className="text-sm font-semibold mb-2">
               {state.logicCorrect && state.answerCorrect ? (
@@ -346,15 +352,24 @@ export default function ReviewPage() {
             <p className="text-xs text-slate-600 leading-relaxed">{question.explanation}</p>
           </div>
 
-          {/* Next */}
           <button
             onClick={next}
-            className="w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors"
+            className="w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors mb-16"
           >
             {state.currentIndex < state.questions.length - 1 ? "다음 문제" : "결과 보기"}
           </button>
         </div>
       )}
+
+      {/* Floating back */}
+      <Link
+        href="/wrong-answers"
+        className="fixed bottom-6 left-6 w-11 h-11 bg-white border border-slate-200 rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 active:scale-90 transition-all z-50"
+      >
+        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </Link>
     </div>
   );
 }

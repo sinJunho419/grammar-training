@@ -11,6 +11,15 @@ const gradeLabels: Record<number, string> = {
   7: "Bronze", 8: "Silver", 9: "Gold", 10: "Platinum", 11: "Diamond", 12: "Grandmaster",
 };
 
+const gradeColors: Record<number, { bar: string; barBg: string; headerBg: string; headerText: string }> = {
+  7:  { bar: "bg-amber-500",  barBg: "bg-amber-100",  headerBg: "bg-amber-50",  headerText: "text-amber-700" },
+  8:  { bar: "bg-slate-500",  barBg: "bg-slate-100",  headerBg: "bg-slate-50",  headerText: "text-slate-600" },
+  9:  { bar: "bg-yellow-500", barBg: "bg-yellow-100", headerBg: "bg-yellow-50", headerText: "text-yellow-700" },
+  10: { bar: "bg-cyan-500",   barBg: "bg-cyan-100",   headerBg: "bg-cyan-50",   headerText: "text-cyan-700" },
+  11: { bar: "bg-indigo-500", barBg: "bg-indigo-100", headerBg: "bg-indigo-50", headerText: "text-indigo-700" },
+  12: { bar: "bg-red-500",    barBg: "bg-red-100",    headerBg: "bg-red-50",    headerText: "text-red-700" },
+};
+
 const logicNames: Record<number, string> = {
   1: "수 일치", 2: "동사 vs 준동사", 3: "능동 vs 수동",
   4: "관계사 vs 접속사", 5: "형용사 vs 부사", 6: "병렬 구조",
@@ -104,6 +113,7 @@ export default function QuizPage() {
   const grade = parseInt(params.grade as string);
   const logicNo = parseInt(params.logicNo as string);
   const [state, dispatch] = useReducer(reducer, initialState);
+  const gc = gradeColors[grade] || gradeColors[7];
 
   useEffect(() => {
     if (state.justCompleted) {
@@ -151,8 +161,8 @@ export default function QuizPage() {
     const percentage = Math.round((state.score / state.questions.length) * 100);
     return (
       <div className="py-10">
-        <div className="text-center mb-8">
-          <p className="text-xs text-slate-400 mb-1">{gradeLabels[grade]} &middot; L{logicNo} {logicNames[logicNo]}</p>
+        <div className={`-mx-5 -mt-10 px-5 pt-10 pb-6 mb-6 ${gc.headerBg}`}>
+          <p className={`text-xs ${gc.headerText} mb-1`}>{gradeLabels[grade]} · L{logicNo} {logicNames[logicNo]}</p>
           <h2 className="text-xl font-bold text-slate-900">학습 결과</h2>
         </div>
 
@@ -165,7 +175,7 @@ export default function QuizPage() {
           </div>
         </div>
 
-        <div className="flex gap-2.5">
+        <div className="flex gap-2.5 pb-16">
           <button
             onClick={() => dispatch({ type: "RESET" })}
             className="flex-1 py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors"
@@ -179,6 +189,16 @@ export default function QuizPage() {
             다른 로직
           </Link>
         </div>
+
+        {/* Floating back */}
+        <Link
+          href={`/grade/${grade}`}
+          className="fixed bottom-6 left-6 w-11 h-11 bg-white border border-slate-200 rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 active:scale-90 transition-all z-50"
+        >
+          <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
       </div>
     );
   }
@@ -188,22 +208,24 @@ export default function QuizPage() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-xs text-slate-500">
-          {gradeLabels[grade]} · L{logicNo} {logicNames[logicNo]}
-        </span>
-        <span className="text-xs text-slate-400">
-          {state.score}/{state.currentIndex + (state.isAnswered ? 1 : 0)}
-        </span>
-      </div>
+      {/* Header with grade color */}
+      <div className={`-mx-5 -mt-8 px-5 pt-8 pb-4 mb-4 ${gc.headerBg}`}>
+        <div className="flex items-center justify-between mb-3">
+          <span className={`text-xs font-medium ${gc.headerText}`}>
+            {gradeLabels[grade]} · L{logicNo} {logicNames[logicNo]}
+          </span>
+          <span className="text-xs text-slate-400">
+            {state.score}/{state.currentIndex + (state.isAnswered ? 1 : 0)}
+          </span>
+        </div>
 
-      {/* Progress bar */}
-      <div className="w-full bg-slate-100 rounded-full h-1 mb-6">
-        <div
-          className="bg-primary-500 h-1 rounded-full transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        />
+        {/* Progress bar */}
+        <div className={`w-full ${gc.barBg} rounded-full h-1.5`}>
+          <div
+            className={`${gc.bar} h-1.5 rounded-full transition-all duration-300`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </div>
 
       {/* Question number + difficulty */}
@@ -266,7 +288,7 @@ export default function QuizPage() {
 
       {/* Explanation */}
       {state.isAnswered && (
-        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 mb-4">
+        <div className={`rounded-xl p-4 mb-4 ${state.selectedOption === question.answer ? "bg-emerald-50 border border-emerald-200" : "bg-rose-50 border border-rose-200"}`}>
           <div className="mb-1.5">
             {state.selectedOption === question.answer ? (
               <span className="text-emerald-600 text-sm font-semibold">정답!</span>
@@ -286,18 +308,21 @@ export default function QuizPage() {
       {state.isAnswered && (
         <button
           onClick={() => dispatch({ type: "NEXT" })}
-          className="w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors"
+          className="w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors mb-16"
         >
           {state.currentIndex < state.questions.length - 1 ? "다음 문제" : "결과 보기"}
         </button>
       )}
 
-      {/* Back */}
-      <div className="mt-6 text-center">
-        <Link href={`/grade/${grade}`} className="text-xs text-slate-400 hover:text-primary-600 transition-colors">
-          &larr; 돌아가기
-        </Link>
-      </div>
+      {/* Floating back */}
+      <Link
+        href={`/grade/${grade}`}
+        className="fixed bottom-6 left-6 w-11 h-11 bg-white border border-slate-200 rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 active:scale-90 transition-all z-50"
+      >
+        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </Link>
     </div>
   );
 }
