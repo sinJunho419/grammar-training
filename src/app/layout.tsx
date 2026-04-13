@@ -19,8 +19,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`${notoSansKR.className} antialiased bg-gray-50 min-h-screen`}>
-        <main className="max-w-3xl mx-auto px-4 py-6">
+      <body className={`${notoSansKR.className} antialiased min-h-screen`}>
+        <main className="max-w-lg mx-auto px-5 py-8">
           {children}
         </main>
       </body>

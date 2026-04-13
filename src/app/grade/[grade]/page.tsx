@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getAllCompletions } from "@/lib/completion";
 
-const gradeConfig: Record<number, { label: string; sub: string; icon: string; bg: string; text: string; badge: string; border: string }> = {
-  7:  { label: "Bronze",      sub: "중1", icon: "🛡️", bg: "bg-amber-50",  text: "text-amber-800",  badge: "bg-amber-600",  border: "border-amber-200" },
-  8:  { label: "Silver",      sub: "중2", icon: "⚔️", bg: "bg-slate-50",  text: "text-slate-700",  badge: "bg-slate-500",  border: "border-slate-200" },
-  9:  { label: "Gold",        sub: "중3", icon: "👑", bg: "bg-yellow-50", text: "text-yellow-800", badge: "bg-yellow-500", border: "border-yellow-200" },
-  10: { label: "Platinum",    sub: "고1", icon: "💎", bg: "bg-cyan-50",   text: "text-cyan-800",   badge: "bg-cyan-500",   border: "border-cyan-200" },
-  11: { label: "Diamond",     sub: "고2", icon: "🔮", bg: "bg-indigo-50", text: "text-indigo-800", badge: "bg-indigo-500", border: "border-indigo-200" },
-  12: { label: "Grandmaster", sub: "고3", icon: "🏆", bg: "bg-red-50",    text: "text-red-800",    badge: "bg-red-500",    border: "border-red-200" },
+const gradeConfig: Record<number, { label: string; sub: string; color: string }> = {
+  7:  { label: "Bronze",      sub: "중1", color: "#b45309" },
+  8:  { label: "Silver",      sub: "중2", color: "#64748b" },
+  9:  { label: "Gold",        sub: "중3", color: "#ca8a04" },
+  10: { label: "Platinum",    sub: "고1", color: "#0891b2" },
+  11: { label: "Diamond",     sub: "고2", color: "#4f46e5" },
+  12: { label: "Grandmaster", sub: "고3", color: "#dc2626" },
 };
 
 const logicNames: Record<number, string> = {
@@ -49,47 +49,55 @@ export default function GradePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="text-gray-400">로딩 중...</div>
+        <div className="text-slate-400 text-sm">로딩 중...</div>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="text-center mb-6">
-        <span className="text-3xl mb-1">{config.icon}</span>
-        <h1 className="text-xl font-bold text-gray-900">
-          {config.label} <span className="text-sm font-normal text-gray-400">{config.sub}</span>
-        </h1>
+      {/* Header */}
+      <div className="mb-8">
+        <Link href="/" className="text-xs text-slate-400 hover:text-primary-600 transition-colors">
+          &larr; 홈
+        </Link>
+        <div className="flex items-center gap-2.5 mt-2">
+          <div className="w-1.5 h-6 rounded-full" style={{ backgroundColor: config.color }} />
+          <h1 className="text-xl font-bold text-slate-900">
+            {config.label}
+            <span className="text-sm font-normal text-slate-400 ml-2">{config.sub}</span>
+          </h1>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {/* Logic list */}
+      <div className="flex flex-col gap-2.5">
         {logics.map((logic) => {
           const count = completions[logic.logic_no] || 0;
           return (
             <Link
               key={logic.logic_no}
               href={`/grade/${grade}/logic/${logic.logic_no}`}
-              className={`group relative flex flex-col items-center justify-center rounded-2xl ${config.bg} ${config.border} border p-4 hover:shadow-md hover:scale-[1.03] active:scale-[0.97] transition-all duration-200`}
+              className="group flex items-center gap-4 bg-white rounded-xl px-4 py-3.5 border border-slate-200/80 hover:border-primary-300 hover:shadow-sm transition-all duration-150"
             >
-              <div className={`${config.text} font-bold text-lg`}>
-                L{logic.logic_no}
+              <div className="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-primary-50 flex items-center justify-center text-sm font-bold text-slate-500 group-hover:text-primary-600 transition-colors">
+                {logic.logic_no}
               </div>
-              <div className={`text-sm font-semibold ${config.text} text-center mt-0.5`}>
-                {logicNames[logic.logic_no] || logic.name}
+              <div className="flex-1 min-w-0">
+                <span className="font-medium text-slate-800 text-[15px]">
+                  {logicNames[logic.logic_no] || logic.name}
+                </span>
               </div>
-              <div className={`mt-2 text-xs font-bold px-2.5 py-0.5 rounded-full text-white ${count > 0 ? config.badge : "bg-gray-300"}`}>
-                {count > 0 ? `${count}회 완료` : "미학습"}
-              </div>
+              {count > 0 ? (
+                <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+                  {count}회
+                </span>
+              ) : (
+                <span className="text-xs text-slate-300">미학습</span>
+              )}
             </Link>
           );
         })}
-      </div>
-
-      <div className="mt-6 text-center">
-        <Link href="/" className="inline-block px-6 py-2.5 bg-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-300 transition-colors">
-          돌아가기
-        </Link>
       </div>
     </div>
   );

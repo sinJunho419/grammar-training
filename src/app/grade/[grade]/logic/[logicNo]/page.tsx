@@ -22,9 +22,9 @@ const difficultyLabels: Record<string, string> = {
 };
 
 const difficultyColors: Record<string, string> = {
-  basic: "bg-green-100 text-green-700",
-  intermediate: "bg-yellow-100 text-yellow-700",
-  advanced: "bg-red-100 text-red-700",
+  basic: "bg-emerald-50 text-emerald-600",
+  intermediate: "bg-amber-50 text-amber-600",
+  advanced: "bg-rose-50 text-rose-600",
 };
 
 type State = {
@@ -131,7 +131,7 @@ export default function QuizPage() {
   if (state.loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="text-gray-400">문제를 불러오는 중...</div>
+        <div className="text-slate-400 text-sm">문제를 불러오는 중...</div>
       </div>
     );
   }
@@ -139,8 +139,8 @@ export default function QuizPage() {
   if (state.questions.length === 0) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-500 mb-4">문제가 없습니다.</p>
-        <Link href={`/grade/${grade}`} className="text-blue-600 hover:underline">
+        <p className="text-slate-500 mb-4 text-sm">문제가 없습니다.</p>
+        <Link href={`/grade/${grade}`} className="text-primary-600 hover:underline text-sm">
           돌아가기
         </Link>
       </div>
@@ -150,33 +150,33 @@ export default function QuizPage() {
   if (state.isComplete) {
     const percentage = Math.round((state.score / state.questions.length) * 100);
     return (
-      <div className="text-center py-10">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">학습 결과</h2>
-        <p className="text-gray-500 mb-6">
-          {gradeLabels[grade]} &middot; L{logicNo} {logicNames[logicNo]}
-        </p>
+      <div className="py-10">
+        <div className="text-center mb-8">
+          <p className="text-xs text-slate-400 mb-1">{gradeLabels[grade]} &middot; L{logicNo} {logicNames[logicNo]}</p>
+          <h2 className="text-xl font-bold text-slate-900">학습 결과</h2>
+        </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm mb-6">
-          <div className={`text-5xl font-bold mb-2 ${percentage >= 80 ? "text-emerald-500" : percentage >= 50 ? "text-yellow-500" : "text-red-500"}`}>
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-8 text-center mb-8">
+          <div className={`text-4xl font-bold mb-1 ${percentage >= 80 ? "text-emerald-500" : percentage >= 50 ? "text-amber-500" : "text-rose-500"}`}>
             {percentage}%
           </div>
-          <div className="text-gray-600">
-            총 {state.questions.length}문제 중 {state.score}문제 정답
+          <div className="text-sm text-slate-500">
+            {state.questions.length}문제 중 {state.score}문제 정답
           </div>
         </div>
 
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-2.5">
           <button
             onClick={() => dispatch({ type: "RESET" })}
-            className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+            className="flex-1 py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors"
           >
             다시 풀기
           </button>
           <Link
             href={`/grade/${grade}`}
-            className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors text-center"
           >
-            다른 로직 선택
+            다른 로직
           </Link>
         </div>
       </div>
@@ -189,41 +189,42 @@ export default function QuizPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-gray-700 font-medium">
-          {gradeLabels[grade]} L{logicNo} ({logicNames[logicNo]})
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-xs text-slate-500">
+          {gradeLabels[grade]} · L{logicNo} {logicNames[logicNo]}
         </span>
-        <span className="text-sm text-gray-500">
-          {state.score}정답 / {state.currentIndex + (state.isAnswered ? 1 : 0)}문제
+        <span className="text-xs text-slate-400">
+          {state.score}/{state.currentIndex + (state.isAnswered ? 1 : 0)}
         </span>
       </div>
 
       {/* Progress bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+      <div className="w-full bg-slate-100 rounded-full h-1 mb-6">
         <div
-          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+          className="bg-primary-500 h-1 rounded-full transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       {/* Question number + difficulty */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-sm font-medium text-gray-700">
-          문제 {state.currentIndex + 1} / {state.questions.length}
+        <span className="text-sm font-semibold text-slate-800">
+          Q{state.currentIndex + 1}
+          <span className="text-slate-300 font-normal"> / {state.questions.length}</span>
         </span>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${difficultyColors[question.difficulty]}`}>
+        <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${difficultyColors[question.difficulty]}`}>
           {difficultyLabels[question.difficulty]}
         </span>
       </div>
 
       {/* Question text */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm mb-4">
-        <p className="text-gray-900 leading-relaxed whitespace-pre-line">
+      <div className="bg-white rounded-xl border border-slate-200/80 p-5 mb-5">
+        <p className="text-slate-800 leading-relaxed text-[15px] whitespace-pre-line">
           {question.question.split("___").map((part, i, arr) => (
             <span key={i}>
               {part}
               {i < arr.length - 1 && (
-                <span className="inline-block mx-1 px-3 py-0.5 bg-blue-50 border-b-2 border-blue-400 rounded text-blue-600 font-medium">
+                <span className="inline-block mx-0.5 px-2 py-0.5 bg-primary-50 border-b-2 border-primary-400 rounded text-primary-600 font-medium text-sm">
                   ____
                 </span>
               )}
@@ -233,21 +234,21 @@ export default function QuizPage() {
       </div>
 
       {/* Options */}
-      <div className="flex flex-col gap-2 mb-4">
+      <div className="flex flex-col gap-2 mb-5">
         {question.options.map((option, idx) => {
           const optionNum = idx + 1;
-          let btnClass = "bg-white border-gray-200 hover:border-blue-300 text-gray-900";
+          let style = "bg-white border-slate-200/80 text-slate-800 hover:border-primary-300";
 
           if (state.isAnswered) {
             if (optionNum === question.answer) {
-              btnClass = "bg-emerald-50 border-emerald-500 text-emerald-700";
+              style = "bg-emerald-50 border-emerald-400 text-emerald-700";
             } else if (optionNum === state.selectedOption) {
-              btnClass = "bg-red-50 border-red-500 text-red-700";
+              style = "bg-rose-50 border-rose-400 text-rose-600";
             } else {
-              btnClass = "bg-gray-50 border-gray-200 text-gray-400";
+              style = "bg-slate-50 border-slate-100 text-slate-300";
             }
           } else if (optionNum === state.selectedOption) {
-            btnClass = "bg-blue-50 border-blue-400 text-blue-700";
+            style = "bg-primary-50 border-primary-400 text-primary-700";
           }
 
           return (
@@ -255,7 +256,7 @@ export default function QuizPage() {
               key={idx}
               onClick={() => dispatch({ type: "SELECT_OPTION", option: optionNum })}
               disabled={state.isAnswered}
-              className={`w-full text-left px-4 py-3 rounded-xl border-2 font-medium transition-all ${btnClass} ${!state.isAnswered ? "cursor-pointer" : "cursor-default"}`}
+              className={`w-full text-left px-4 py-3 rounded-xl border-2 text-[15px] font-medium transition-all ${style} ${!state.isAnswered ? "cursor-pointer" : "cursor-default"}`}
             >
               {option}
             </button>
@@ -265,17 +266,17 @@ export default function QuizPage() {
 
       {/* Explanation */}
       {state.isAnswered && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-4">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 mb-4">
+          <div className="mb-1.5">
             {state.selectedOption === question.answer ? (
-              <span className="text-emerald-600 font-bold">정답!</span>
+              <span className="text-emerald-600 text-sm font-semibold">정답!</span>
             ) : (
-              <span className="text-red-600 font-bold">
-                오답! 정답은 {question.options[question.answer - 1]}
+              <span className="text-rose-500 text-sm font-semibold">
+                오답 — 정답: {question.options[question.answer - 1]}
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-700 leading-relaxed">
+          <p className="text-sm text-slate-600 leading-relaxed">
             {question.explanation}
           </p>
         </div>
@@ -285,16 +286,16 @@ export default function QuizPage() {
       {state.isAnswered && (
         <button
           onClick={() => dispatch({ type: "NEXT" })}
-          className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+          className="w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors"
         >
           {state.currentIndex < state.questions.length - 1 ? "다음 문제" : "결과 보기"}
         </button>
       )}
 
-      {/* 돌아가기 */}
+      {/* Back */}
       <div className="mt-6 text-center">
-        <Link href={`/grade/${grade}`} className="inline-block px-6 py-2.5 bg-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-300 transition-colors">
-          돌아가기
+        <Link href={`/grade/${grade}`} className="text-xs text-slate-400 hover:text-primary-600 transition-colors">
+          &larr; 돌아가기
         </Link>
       </div>
     </div>

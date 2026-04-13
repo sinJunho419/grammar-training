@@ -24,9 +24,9 @@ const difficultyLabels: Record<string, string> = {
 };
 
 const difficultyColors: Record<string, string> = {
-  basic: "bg-green-100 text-green-700",
-  intermediate: "bg-yellow-100 text-yellow-700",
-  advanced: "bg-red-100 text-red-700",
+  basic: "bg-emerald-50 text-emerald-600",
+  intermediate: "bg-amber-50 text-amber-600",
+  advanced: "bg-rose-50 text-rose-600",
 };
 
 type Step = "logic" | "answer" | "result";
@@ -132,7 +132,7 @@ export default function WrongAnswersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="text-gray-400">불러오는 중...</div>
+        <div className="text-slate-400 text-sm">불러오는 중...</div>
       </div>
     );
   }
@@ -140,40 +140,40 @@ export default function WrongAnswersPage() {
   if (items.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="text-4xl mb-4">&#10024;</div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">오답이 없습니다</h2>
-        <p className="text-gray-500 mb-6">문제를 풀고 틀린 문제가 여기에 기록됩니다.</p>
-        <Link href="/" className="text-blue-600 hover:underline">학습하러 가기</Link>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">오답이 없습니다</h2>
+        <p className="text-slate-400 text-sm mb-6">문제를 풀고 틀린 문제가 여기에 기록됩니다.</p>
+        <Link href="/" className="text-primary-600 text-sm hover:underline">학습하러 가기</Link>
       </div>
     );
   }
 
   return (
     <div>
+      {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-gray-900">오답노트</h1>
-          <Link href="/" className="text-sm text-blue-600 hover:underline">&larr; 홈</Link>
-        </div>
-        <p className="text-gray-500 text-sm mt-1">(로직+정답 연속 3회 정답 시 자동 졸업)</p>
+        <Link href="/" className="text-xs text-slate-400 hover:text-primary-600 transition-colors">
+          &larr; 홈
+        </Link>
+        <h1 className="text-xl font-bold text-slate-900 mt-2">오답노트</h1>
+        <p className="text-slate-400 text-xs mt-1">로직+정답 연속 3회 정답 시 자동 졸업</p>
       </div>
 
-      {/* 오답 다시 풀기 버튼 */}
+      {/* Review button */}
       <Link
         href="/wrong-answers/review"
-        className="flex items-center justify-center gap-2 w-full py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors mb-6"
+        className="flex items-center justify-center gap-2 w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors mb-6"
       >
         오답 연속 풀기 ({items.length}문제)
       </Link>
 
       {/* Filters */}
-      <div className="flex gap-2 mb-4 flex-wrap">
+      <div className="flex gap-1.5 mb-5 flex-wrap">
         <button
           onClick={() => { setSelectedGrade(null); setSelectedLogic(null); }}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             !selectedGrade && !selectedLogic
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              ? "bg-primary-600 text-white"
+              : "bg-slate-100 text-slate-500 hover:bg-slate-200"
           }`}
         >
           전체
@@ -182,10 +182,10 @@ export default function WrongAnswersPage() {
           <button
             key={g}
             onClick={() => { setSelectedGrade(g === selectedGrade ? null : g); setSelectedLogic(null); }}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               selectedGrade === g
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-primary-600 text-white"
+                : "bg-slate-100 text-slate-500 hover:bg-slate-200"
             }`}
           >
             {gradeLabels[g]}
@@ -194,42 +194,42 @@ export default function WrongAnswersPage() {
       </div>
 
       {/* Wrong answer list */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2.5">
         {filtered.map((item) => {
           const st = getState(item.questionId);
           return (
-            <div key={item.questionId} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div key={item.questionId} className="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
               <button
                 onClick={() => handleExpand(item.questionId)}
                 className="w-full text-left p-4"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-medium">
                     {gradeLabels[item.grade]}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${difficultyColors[item.difficulty]}`}>
+                  <span className={`text-[11px] px-2 py-0.5 rounded font-medium ${difficultyColors[item.difficulty]}`}>
                     {difficultyLabels[item.difficulty]}
                   </span>
-                  <span className="text-xs text-gray-400">
-                    연속 {item.streak ?? 0}/3
+                  <span className="text-[11px] text-slate-300 ml-auto">
+                    {item.streak ?? 0}/3
                   </span>
                 </div>
-                <p className="text-sm text-gray-900 line-clamp-2">{item.question}</p>
+                <p className="text-sm text-slate-700 line-clamp-2">{item.question}</p>
               </button>
 
               {expandedId === item.questionId && (
-                <div className="px-4 pb-4 border-t border-gray-100 pt-3">
+                <div className="px-4 pb-4 border-t border-slate-100 pt-3">
 
-                  {/* STEP 1: 로직 선택 */}
+                  {/* STEP 1: Logic */}
                   {st.step === "logic" && (
                     <div>
-                      <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                      <label className="text-xs font-semibold text-slate-600 mb-2 block">
                         이 문제의 로직은?
                       </label>
                       <select
                         value={st.selectedLogic ?? ""}
                         onChange={(e) => updateState(item.questionId, { selectedLogic: parseInt(e.target.value) || null })}
-                        className="w-full px-3 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-sm font-medium focus:border-blue-400 focus:outline-none mb-3"
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:border-primary-400 focus:outline-none mb-3"
                       >
                         <option value="">로직을 선택하세요</option>
                         {Object.entries(logicNames).map(([key, name]) => (
@@ -239,20 +239,20 @@ export default function WrongAnswersPage() {
                       <button
                         onClick={() => handleLogicNext(item)}
                         disabled={st.selectedLogic === null}
-                        className="w-full py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        className="w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
                       >
                         다음
                       </button>
                     </div>
                   )}
 
-                  {/* STEP 2: 선지 선택 */}
+                  {/* STEP 2: Answer */}
                   {st.step === "answer" && (
                     <div>
-                      <div className="text-sm text-gray-500 mb-3">
-                        선택한 로직: <span className="font-semibold text-gray-700">L{st.selectedLogic} {logicNames[st.selectedLogic!]}</span>
+                      <div className="text-xs text-slate-400 mb-3">
+                        선택한 로직: <span className="font-semibold text-slate-600">L{st.selectedLogic} {logicNames[st.selectedLogic!]}</span>
                       </div>
-                      <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                      <label className="text-xs font-semibold text-slate-600 mb-2 block">
                         정답을 선택하세요
                       </label>
                       <div className="flex flex-col gap-2 mb-3">
@@ -263,10 +263,10 @@ export default function WrongAnswersPage() {
                             <button
                               key={idx}
                               onClick={() => updateState(item.questionId, { selectedOption: optionNum })}
-                              className={`w-full text-left px-4 py-3 rounded-xl border-2 font-medium transition-all cursor-pointer ${
+                              className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer ${
                                 selected
-                                  ? "border-blue-400 bg-blue-50 text-blue-700"
-                                  : "border-gray-200 bg-white text-gray-900 hover:border-blue-300"
+                                  ? "border-primary-400 bg-primary-50 text-primary-700"
+                                  : "border-slate-200/80 bg-white text-slate-700 hover:border-primary-300"
                               }`}
                             >
                               {option}
@@ -277,68 +277,68 @@ export default function WrongAnswersPage() {
                       <button
                         onClick={() => handleSubmit(item)}
                         disabled={st.selectedOption === null}
-                        className="w-full py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        className="w-full py-3 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
                       >
                         제출
                       </button>
                     </div>
                   )}
 
-                  {/* STEP 3: 결과 */}
+                  {/* STEP 3: Result */}
                   {st.step === "result" && (
                     <div>
-                      {/* 선지 표시 */}
+                      {/* Options display */}
                       <div className="flex flex-col gap-2 mb-4">
                         {item.options.map((option, idx) => {
                           const optionNum = idx + 1;
-                          let btnClass = "border-gray-200 bg-gray-50 text-gray-400";
+                          let cls = "border-slate-100 bg-slate-50 text-slate-300";
                           if (optionNum === item.answer) {
-                            btnClass = "border-emerald-500 bg-emerald-50 text-emerald-700";
+                            cls = "border-emerald-400 bg-emerald-50 text-emerald-700";
                           } else if (optionNum === st.selectedOption) {
-                            btnClass = "border-red-500 bg-red-50 text-red-700";
+                            cls = "border-rose-400 bg-rose-50 text-rose-600";
                           }
                           return (
-                            <div key={idx} className={`px-4 py-3 rounded-xl border-2 font-medium ${btnClass}`}>
+                            <div key={idx} className={`px-4 py-3 rounded-xl border-2 text-sm font-medium ${cls}`}>
                               {option}
                             </div>
                           );
                         })}
                       </div>
 
-                      {/* 로직 결과 */}
-                      <div className={`rounded-xl p-3 mb-3 ${st.logicCorrect ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"}`}>
-                        <div className={`text-sm font-semibold ${st.logicCorrect ? "text-emerald-600" : "text-red-600"}`}>
-                          로직 {st.logicCorrect ? "정답" : "오답"}{!st.logicCorrect && " (연속 기록 초기화)"}
+                      {/* Logic result */}
+                      <div className={`rounded-xl p-3 mb-3 ${st.logicCorrect ? "bg-emerald-50 border border-emerald-200" : "bg-rose-50 border border-rose-200"}`}>
+                        <div className={`text-xs font-semibold ${st.logicCorrect ? "text-emerald-600" : "text-rose-500"}`}>
+                          로직 {st.logicCorrect ? "정답" : "오답"}{!st.logicCorrect && " — 연속 기록 초기화"}
                         </div>
-                        <div className="text-sm text-gray-700 mt-1">
-                          내 선택: <span className="font-medium">L{st.selectedLogic} {logicNames[st.selectedLogic!]}</span>
+                        <div className="text-xs text-slate-600 mt-1">
+                          선택: L{st.selectedLogic} {logicNames[st.selectedLogic!]}
                         </div>
                         {!st.logicCorrect && (
-                          <div className="text-sm text-emerald-700 mt-0.5">
-                            정답: <span className="font-medium">L{item.logicNo} {logicNames[item.logicNo]}</span>
+                          <div className="text-xs text-emerald-600 mt-0.5">
+                            정답: L{item.logicNo} {logicNames[item.logicNo]}
                           </div>
                         )}
                       </div>
 
-                      {/* 선지 결과 + 해설 */}
-                      <div className={`rounded-2xl p-4 ${st.logicCorrect && st.answerCorrect ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"}`}>
+                      {/* Answer result + explanation */}
+                      <div className={`rounded-xl p-4 ${st.logicCorrect && st.answerCorrect ? "bg-emerald-50 border border-emerald-200" : "bg-rose-50 border border-rose-200"}`}>
                         {st.logicCorrect && st.answerCorrect ? (
-                          <div className="text-emerald-600 font-bold mb-2">
+                          <div className="text-emerald-600 text-sm font-semibold mb-2">
                             로직 + 선지 모두 정답!
                           </div>
                         ) : (
                           <div className="mb-2">
-                            <div className={`text-sm font-semibold ${st.answerCorrect ? "text-emerald-600" : "text-red-600"}`}>
-                              선지 {st.answerCorrect ? "정답" : "오답"}{!st.answerCorrect && " (연속 기록 초기화)"}
+                            <div className={`text-xs font-semibold ${st.answerCorrect ? "text-emerald-600" : "text-rose-500"}`}>
+                              선지 {st.answerCorrect ? "정답" : "오답"}{!st.answerCorrect && " — 연속 기록 초기화"}
                             </div>
                             {!st.answerCorrect && (
-                              <div className="text-sm text-emerald-700 mt-0.5">
-                                정답: <span className="font-medium">{item.options[item.answer - 1]}</span>
+                              <div className="text-xs text-emerald-600 mt-0.5">
+                                정답: {item.options[item.answer - 1]}
                               </div>
                             )}
                           </div>
                         )}
-                        <p className="text-sm text-gray-700 leading-relaxed mt-2">{item.explanation}</p>
+                        <p className="text-xs text-slate-600 leading-relaxed mt-2">{item.explanation}</p>
                       </div>
                     </div>
                   )}

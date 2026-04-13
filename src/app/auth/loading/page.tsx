@@ -57,66 +57,24 @@ function LoadingContent() {
 
     if (!showUI) {
         return (
-            <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                minHeight: '100vh', background: 'linear-gradient(135deg,#0f172a,#1e293b,#0f172a)',
-                color: '#fff', fontFamily: 'sans-serif',
-            }}>
-                <div style={{ textAlign: 'center' }}>
-                    <h2>{status}</h2>
+            <div className="flex items-center justify-center min-h-screen bg-slate-50">
+                <div className="text-center">
+                    <h2 className="text-slate-600 text-sm">{status}</h2>
                 </div>
             </div>
         )
     }
 
     return (
-        <>
-            <div className="bg-orb orb1" />
-            <div className="bg-orb orb2" />
-            <div className="container">
-                <div className="logo">9대 로직 영문법</div>
-                <div className="spinner-wrap"><div className="spinner" /></div>
-                <div className="status">{status}<span className="dots" /></div>
+        <div className="flex items-center justify-center min-h-screen bg-slate-50">
+            <div className="text-center">
+                <div className="text-xl font-bold text-slate-900 mb-6">9대 로직 영문법</div>
+                <div className="flex justify-center mb-5">
+                    <div className="w-8 h-8 border-2 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
+                </div>
+                <div className="text-sm text-slate-400">{status}<span className="dots" /></div>
             </div>
             <style jsx>{`
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                .container {
-                    text-align: center;
-                    z-index: 1;
-                    animation: fadeIn 0.3s ease-out;
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(12px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .logo {
-                    font-size: 2.2rem;
-                    font-weight: 800;
-                    background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    margin-bottom: 2rem;
-                }
-                .spinner-wrap {
-                    display: flex;
-                    justify-content: center;
-                    margin-bottom: 1.5rem;
-                }
-                .spinner {
-                    width: 48px;
-                    height: 48px;
-                    border: 4px solid rgba(59, 130, 246, 0.2);
-                    border-top-color: #3b82f6;
-                    border-radius: 50%;
-                    animation: spin 0.8s linear infinite;
-                }
-                @keyframes spin {
-                    to { transform: rotate(360deg); }
-                }
-                .status {
-                    font-size: 0.95rem;
-                    color: #94a3b8;
-                }
                 .dots::after {
                     content: '';
                     animation: dots 1.5s steps(4, end) infinite;
@@ -127,43 +85,15 @@ function LoadingContent() {
                     50%  { content: '..'; }
                     75%  { content: '...'; }
                 }
-                .bg-orb {
-                    position: fixed;
-                    border-radius: 50%;
-                    filter: blur(80px);
-                    opacity: 0.3;
-                    animation: float 6s ease-in-out infinite;
-                }
-                .orb1 {
-                    width: 300px; height: 300px;
-                    background: #3b82f6;
-                    top: -100px; left: -100px;
-                }
-                .orb2 {
-                    width: 250px; height: 250px;
-                    background: #a855f7;
-                    bottom: -80px; right: -80px;
-                    animation-delay: 3s;
-                }
-                @keyframes float {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(20px); }
-                }
             `}</style>
-        </>
+        </div>
     )
 }
 
 export default function AuthLoadingPage() {
     return (
-        <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            minHeight: '100vh', background: 'linear-gradient(135deg,#0f172a,#1e293b,#0f172a)',
-            fontFamily: '-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif',
-        }}>
-            <Suspense>
-                <LoadingContent />
-            </Suspense>
-        </div>
+        <Suspense>
+            <LoadingContent />
+        </Suspense>
     )
 }

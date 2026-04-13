@@ -5,60 +5,12 @@ import { useEffect, useState } from "react";
 import { getWrongAnswerCount } from "@/lib/wrong-answers";
 
 const grades = [
-  {
-    grade: 7,
-    label: "Bronze",
-    sub: "중1",
-    gradient: "from-amber-700 via-amber-600 to-yellow-700",
-    ring: "ring-amber-400/40",
-    icon: "🛡️",
-    shadow: "shadow-amber-300/30",
-  },
-  {
-    grade: 8,
-    label: "Silver",
-    sub: "중2",
-    gradient: "from-gray-400 via-slate-300 to-gray-400",
-    ring: "ring-gray-300/40",
-    icon: "⚔️",
-    shadow: "shadow-gray-300/30",
-  },
-  {
-    grade: 9,
-    label: "Gold",
-    sub: "중3",
-    gradient: "from-yellow-500 via-amber-400 to-yellow-500",
-    ring: "ring-yellow-300/40",
-    icon: "👑",
-    shadow: "shadow-yellow-300/30",
-  },
-  {
-    grade: 10,
-    label: "Platinum",
-    sub: "고1",
-    gradient: "from-cyan-500 via-teal-400 to-cyan-500",
-    ring: "ring-cyan-300/40",
-    icon: "💎",
-    shadow: "shadow-cyan-300/30",
-  },
-  {
-    grade: 11,
-    label: "Diamond",
-    sub: "고2",
-    gradient: "from-blue-600 via-indigo-500 to-purple-600",
-    ring: "ring-blue-400/40",
-    icon: "🔮",
-    shadow: "shadow-blue-300/30",
-  },
-  {
-    grade: 12,
-    label: "Grandmaster",
-    sub: "고3",
-    gradient: "from-red-600 via-rose-500 to-orange-500",
-    ring: "ring-red-400/40",
-    icon: "🏆",
-    shadow: "shadow-red-300/30",
-  },
+  { grade: 7,  label: "Bronze",      sub: "중1", color: "#b45309" },
+  { grade: 8,  label: "Silver",      sub: "중2", color: "#64748b" },
+  { grade: 9,  label: "Gold",        sub: "중3", color: "#ca8a04" },
+  { grade: 10, label: "Platinum",    sub: "고1", color: "#0891b2" },
+  { grade: 11, label: "Diamond",     sub: "고2", color: "#4f46e5" },
+  { grade: 12, label: "Grandmaster", sub: "고3", color: "#dc2626" },
 ];
 
 export default function Home() {
@@ -70,44 +22,62 @@ export default function Home() {
 
   return (
     <div>
-      <div className="text-center mb-8">
-        <p className="text-sm font-medium text-gray-400 tracking-widest uppercase mb-2">Grammar Logic System</p>
-        <h1 className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+      {/* Header */}
+      <div className="mb-10">
+        <p className="text-xs font-medium text-slate-400 tracking-widest uppercase mb-1.5">
+          Grammar Logic System
+        </p>
+        <h1 className="text-2xl font-bold text-slate-900">
           9대 로직 영문법
         </h1>
-        <div className="mt-3 mx-auto w-16 h-1 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
       </div>
 
-      {/* 오답노트 */}
+      {/* Grade list */}
+      <div className="flex flex-col gap-2.5 mb-8">
+        {grades.map(({ grade, label, sub, color }) => (
+          <Link
+            key={grade}
+            href={`/grade/${grade}`}
+            className="group flex items-center gap-4 bg-white rounded-xl px-4 py-3.5 border border-slate-200/80 hover:border-primary-300 hover:shadow-sm transition-all duration-150"
+          >
+            <div
+              className="w-1 h-8 rounded-full shrink-0"
+              style={{ backgroundColor: color }}
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline gap-2">
+                <span className="font-semibold text-slate-900 text-[15px]">{label}</span>
+                <span className="text-xs text-slate-400">{sub}</span>
+              </div>
+            </div>
+            <svg className="w-4 h-4 text-slate-300 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        ))}
+      </div>
+
+      {/* Wrong answers */}
       <Link
         href="/wrong-answers"
-        className="group relative flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-orange-500 via-red-500 to-rose-500 p-4 shadow-lg shadow-orange-300/30 ring-2 ring-orange-400/30 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] transition-all duration-200 mb-6 max-w-[240px] mx-auto overflow-hidden"
+        className="flex items-center justify-between bg-white rounded-xl px-4 py-3.5 border border-slate-200/80 hover:border-primary-300 hover:shadow-sm transition-all duration-150"
       >
-        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-        <span className="text-2xl drop-shadow-md">📝</span>
-        <span className="text-white font-bold text-base tracking-wide drop-shadow-sm">오답노트</span>
-        <span className={`text-sm font-bold px-3 py-1 rounded-full ${
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
+            <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <span className="font-medium text-slate-700 text-[15px]">오답노트</span>
+        </div>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
           wrongCount > 0
-            ? "bg-white text-orange-600"
-            : "bg-white/30 text-white"
+            ? "bg-primary-100 text-primary-700"
+            : "bg-slate-100 text-slate-400"
         }`}>
           {wrongCount}
         </span>
       </Link>
-
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {grades.map(({ grade, label, sub, gradient, ring, icon, shadow }) => (
-          <Link
-            key={grade}
-            href={`/grade/${grade}`}
-            className={`group relative flex flex-col items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} p-5 ring-2 ${ring} shadow-lg ${shadow} hover:scale-105 hover:shadow-xl active:scale-95 transition-all duration-200 overflow-hidden`}
-          >
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-            <span className="text-3xl mb-1 drop-shadow-md">{icon}</span>
-            <span className="text-white font-bold text-base tracking-wide drop-shadow-sm">{label}</span>
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }
