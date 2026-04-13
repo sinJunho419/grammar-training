@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { getAllCompletions } from "@/lib/completion";
 
 const gradeConfig: Record<number, { label: string; sub: string; icon: string; bg: string; text: string; badge: string; border: string }> = {
@@ -38,15 +37,10 @@ export default function GradePage() {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from("grammar_logics")
-        .select("*")
-        .lte("min_grade", grade)
-        .order("logic_no");
-
-      const logicList = data || [];
+      const res = await fetch(`/api/grammar/logics?grade=${grade}`);
+      const logicList = res.ok ? await res.json() : [];
       setLogics(logicList);
-      setCompletions(getAllCompletions(grade, logicList.map((l) => l.logic_no)));
+      setCompletions(getAllCompletions(grade, logicList.map((l: { logic_no: number }) => l.logic_no)));
       setLoading(false);
     }
     load();

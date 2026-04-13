@@ -3,7 +3,6 @@
 import { useEffect, useReducer } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { GrammarQuestion } from "@/lib/types";
 import { addWrongAnswer } from "@/lib/wrong-answers";
 import { incrementCompletion } from "@/lib/completion";
@@ -114,24 +113,17 @@ export default function QuizPage() {
 
   useEffect(() => {
     async function fetchQuestions() {
-      const { data } = await supabase
-        .from("grammar_questions")
-        .select("*")
-        .eq("grade", grade)
-        .eq("logic_no", logicNo)
-        .order("difficulty")
-        .order("module_no");
+      const res = await fetch(`/api/grammar/questions?grade=${grade}&logicNo=${logicNo}`);
+      const data = res.ok ? await res.json() : [];
 
-      if (data) {
-        const diffOrder: Record<string, number> = { basic: 0, intermediate: 1, advanced: 2 };
-        const parsed = data
-          .map((q) => ({
-            ...q,
-            options: typeof q.options === "string" ? JSON.parse(q.options) : q.options,
-          }))
-          .sort((a, b) => (diffOrder[a.difficulty] ?? 0) - (diffOrder[b.difficulty] ?? 0));
-        dispatch({ type: "SET_QUESTIONS", questions: parsed });
-      }
+      const diffOrder: Record<string, number> = { basic: 0, intermediate: 1, advanced: 2 };
+      const parsed = data
+        .map((q: GrammarQuestion) => ({
+          ...q,
+          options: typeof q.options === "string" ? JSON.parse(q.options) : q.options,
+        }))
+        .sort((a: GrammarQuestion, b: GrammarQuestion) => (diffOrder[a.difficulty] ?? 0) - (diffOrder[b.difficulty] ?? 0));
+      dispatch({ type: "SET_QUESTIONS", questions: parsed });
     }
     fetchQuestions();
   }, [grade, logicNo]);
