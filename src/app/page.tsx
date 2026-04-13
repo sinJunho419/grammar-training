@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import { getWrongAnswerCount } from "@/lib/wrong-answers";
 
 const grades = [
-  { grade: 7,  label: "Bronze",      color: "#b45309", light: "#fef3c7", icon: "B" },
-  { grade: 8,  label: "Silver",      color: "#64748b", light: "#f1f5f9", icon: "S" },
-  { grade: 9,  label: "Gold",        color: "#ca8a04", light: "#fef9c3", icon: "G" },
-  { grade: 10, label: "Platinum",    color: "#0891b2", light: "#cffafe", icon: "P" },
-  { grade: 11, label: "Diamond",     color: "#6366f1", light: "#e0e7ff", icon: "D" },
-  { grade: 12, label: "Grandmaster", color: "#dc2626", light: "#fee2e2", icon: "GM" },
+  { grade: 7,  label: "Bronze",      color: "#b45309" },
+  { grade: 8,  label: "Silver",      color: "#64748b" },
+  { grade: 9,  label: "Gold",        color: "#ca8a04" },
+  { grade: 10, label: "Platinum",    color: "#0891b2" },
+  { grade: 11, label: "Diamond",     color: "#6366f1" },
+  { grade: 12, label: "Grandmaster", color: "#dc2626" },
 ];
 
 export default function Home() {
@@ -32,23 +32,26 @@ export default function Home() {
         </h1>
       </div>
 
-      {/* Grade cards */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        {grades.map(({ grade, label, color, light, icon }) => (
+      {/* Grade list - single column */}
+      <div className="flex flex-col gap-3 mb-6">
+        {grades.map(({ grade, label, color }) => (
           <Link
             key={grade}
             href={`/grade/${grade}`}
-            className="group bg-white rounded-[20px] border border-[#edf2f7] shadow-[0_10px_25px_rgba(0,0,0,0.03)] overflow-hidden hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(0,0,0,0.08)] transition-all duration-300 cursor-pointer"
+            className="group bg-[#eef2ff] rounded-[20px] border border-[#e0e7ff] shadow-[0_10px_25px_rgba(0,0,0,0.03)] overflow-hidden hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(0,0,0,0.08)] transition-all duration-300"
           >
             <div className="h-[3px]" style={{ backgroundColor: color }} />
-            <div className="p-5">
+            <div className="flex items-center gap-4 px-5 py-4">
               <div
-                className="w-[50px] h-[50px] rounded-[14px] flex items-center justify-center text-base font-extrabold mb-3"
-                style={{ backgroundColor: light, color }}
+                className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center shrink-0"
+                style={{ backgroundColor: color }}
               >
-                {icon}
+                <span className="text-white text-sm font-extrabold">{label.charAt(0)}</span>
               </div>
-              <div className="font-extrabold text-[#2d3436] text-[1.05rem]">{label}</div>
+              <span className="font-extrabold text-[#2d3436] text-[1.05rem]">{label}</span>
+              <svg className="w-4 h-4 text-indigo-300 group-hover:text-indigo-500 ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
             </div>
           </Link>
         ))}
@@ -57,11 +60,11 @@ export default function Home() {
       {/* Wrong answers */}
       <Link
         href="/wrong-answers"
-        className="group flex items-center justify-between bg-white rounded-[20px] border border-[#edf2f7] shadow-[0_10px_25px_rgba(0,0,0,0.03)] px-5 py-4 hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(0,0,0,0.08)] transition-all duration-300"
+        className="group flex items-center justify-between bg-[#eef2ff] rounded-[20px] border border-[#e0e7ff] shadow-[0_10px_25px_rgba(0,0,0,0.03)] px-5 py-4 hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(0,0,0,0.08)] transition-all duration-300"
       >
         <div className="flex items-center gap-4">
-          <div className="w-[50px] h-[50px] rounded-[14px] bg-[#eef4ff] flex items-center justify-center">
-            <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="w-[42px] h-[42px] rounded-[12px] bg-primary-600 flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
@@ -69,8 +72,8 @@ export default function Home() {
         </div>
         <span className={`text-sm font-bold px-3 py-1 rounded-full ${
           wrongCount > 0
-            ? "bg-primary-100 text-primary-600"
-            : "bg-slate-100 text-slate-400"
+            ? "bg-primary-200 text-primary-700"
+            : "bg-indigo-100 text-indigo-300"
         }`}>
           {wrongCount}
         </span>

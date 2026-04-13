@@ -11,15 +11,6 @@ const gradeLabels: Record<number, string> = {
   7: "Bronze", 8: "Silver", 9: "Gold", 10: "Platinum", 11: "Diamond", 12: "Grandmaster",
 };
 
-const gradeStyles: Record<number, { color: string; light: string; headerBg: string }> = {
-  7:  { color: "#b45309", light: "#fef3c7", headerBg: "#fffbeb" },
-  8:  { color: "#64748b", light: "#f1f5f9", headerBg: "#f8fafc" },
-  9:  { color: "#ca8a04", light: "#fef9c3", headerBg: "#fefce8" },
-  10: { color: "#0891b2", light: "#cffafe", headerBg: "#ecfeff" },
-  11: { color: "#6366f1", light: "#e0e7ff", headerBg: "#eef2ff" },
-  12: { color: "#dc2626", light: "#fee2e2", headerBg: "#fef2f2" },
-};
-
 const logicNames: Record<number, string> = {
   1: "수 일치", 2: "동사 vs 준동사", 3: "능동 vs 수동",
   4: "관계사 vs 접속사", 5: "형용사 vs 부사", 6: "병렬 구조",
@@ -86,7 +77,6 @@ export default function QuizPage() {
   const grade = parseInt(params.grade as string);
   const logicNo = parseInt(params.logicNo as string);
   const [state, dispatch] = useReducer(reducer, initialState);
-  const gs = gradeStyles[grade] || gradeStyles[7];
 
   useEffect(() => {
     if (state.justCompleted) incrementCompletion(grade, logicNo);
@@ -122,8 +112,8 @@ export default function QuizPage() {
     const pct = Math.round((state.score / state.questions.length) * 100);
     return (
       <div className="py-6">
-        <div className="-mx-5 -mt-6 px-6 pt-8 pb-6 mb-6 rounded-b-[24px]" style={{ backgroundColor: gs.headerBg }}>
-          <p className="text-xs font-bold mb-1" style={{ color: gs.color }}>{gradeLabels[grade]} · L{logicNo} {logicNames[logicNo]}</p>
+        <div className="-mx-5 -mt-6 px-6 pt-8 pb-6 mb-6 rounded-b-[24px] bg-[#eef2ff]">
+          <p className="text-xs font-bold text-primary-500 mb-1">{gradeLabels[grade]} · L{logicNo} {logicNames[logicNo]}</p>
           <h2 className="text-xl font-extrabold text-[#2d3436]">학습 결과</h2>
         </div>
 
@@ -133,7 +123,7 @@ export default function QuizPage() {
         </div>
 
         <div className="flex gap-3 pb-20">
-          <button onClick={() => dispatch({ type: "RESET" })} className="flex-1 py-3.5 rounded-[14px] text-sm font-bold text-white transition-colors" style={{ backgroundColor: gs.color }}>
+          <button onClick={() => dispatch({ type: "RESET" })} className="flex-1 py-3.5 rounded-[14px] text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 transition-colors">
             다시 풀기
           </button>
           <Link href={`/grade/${grade}`} className="flex-1 py-3.5 bg-white border border-[#edf2f7] text-slate-600 rounded-[14px] text-sm font-bold hover:bg-slate-50 transition-colors text-center">
@@ -155,17 +145,17 @@ export default function QuizPage() {
   return (
     <div>
       {/* Header */}
-      <div className="-mx-5 -mt-8 px-6 pt-8 pb-4 mb-5 rounded-b-[24px]" style={{ backgroundColor: gs.headerBg }}>
+      <div className="-mx-5 -mt-8 px-6 pt-8 pb-4 mb-5 rounded-b-[24px] bg-[#eef2ff]">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold" style={{ color: gs.color }}>
+          <span className="text-xs font-bold text-primary-600">
             {gradeLabels[grade]} · L{logicNo} {logicNames[logicNo]}
           </span>
           <span className="text-xs font-semibold text-slate-400">
             {state.score}/{state.currentIndex + (state.isAnswered ? 1 : 0)}
           </span>
         </div>
-        <div className="w-full rounded-full h-2" style={{ backgroundColor: gs.light }}>
-          <div className="h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%`, backgroundColor: gs.color }} />
+        <div className="w-full bg-primary-100 rounded-full h-2">
+          <div className="bg-primary-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
@@ -187,7 +177,7 @@ export default function QuizPage() {
             <span key={i}>
               {part}
               {i < arr.length - 1 && (
-                <span className="inline-block mx-0.5 px-2.5 py-0.5 rounded-lg text-sm font-bold" style={{ backgroundColor: gs.light, color: gs.color, borderBottom: `2px solid ${gs.color}` }}>
+                <span className="inline-block mx-0.5 px-2.5 py-0.5 rounded-lg text-sm font-bold bg-primary-50 text-primary-600 border-b-2 border-primary-400">
                   ____
                 </span>
               )}
@@ -203,13 +193,9 @@ export default function QuizPage() {
           let cls = "bg-white border-[#edf2f7] text-[#2d3436] hover:border-primary-300 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)]";
 
           if (state.isAnswered) {
-            if (optionNum === question.answer) {
-              cls = "bg-emerald-50 border-emerald-400 text-emerald-700";
-            } else if (optionNum === state.selectedOption) {
-              cls = "bg-rose-50 border-rose-400 text-rose-600";
-            } else {
-              cls = "bg-slate-50 border-[#edf2f7] text-slate-300";
-            }
+            if (optionNum === question.answer) cls = "bg-emerald-50 border-emerald-400 text-emerald-700";
+            else if (optionNum === state.selectedOption) cls = "bg-rose-50 border-rose-400 text-rose-600";
+            else cls = "bg-slate-50 border-[#edf2f7] text-slate-300";
           } else if (optionNum === state.selectedOption) {
             cls = "bg-primary-50 border-primary-400 text-primary-700";
           }
@@ -245,8 +231,7 @@ export default function QuizPage() {
       {state.isAnswered && (
         <button
           onClick={() => dispatch({ type: "NEXT" })}
-          className="w-full py-3.5 text-white rounded-[14px] text-sm font-bold transition-colors mb-20"
-          style={{ backgroundColor: gs.color }}
+          className="w-full py-3.5 text-white rounded-[14px] text-sm font-bold bg-primary-600 hover:bg-primary-700 transition-colors mb-20"
         >
           {state.currentIndex < state.questions.length - 1 ? "다음 문제" : "결과 보기"}
         </button>
