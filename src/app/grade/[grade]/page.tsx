@@ -71,7 +71,7 @@ export default function GradePage() {
                 {logic.logic_no}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-[#2d3436] text-[15px]">
+                <div className="font-extrabold text-[#2d3436] text-[15px]">
                   {logicNames[logic.logic_no] || logic.name}
                 </div>
               </div>

@@ -23,7 +23,7 @@ export default function Home() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 text-center">
         <p className="text-xs font-semibold text-slate-400 tracking-widest uppercase mb-1">
           Grammar Logic System
         </p>
