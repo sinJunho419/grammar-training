@@ -57,22 +57,22 @@ function LoadingContent() {
 
     if (!showUI) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-slate-50">
+            <div className="flex items-center justify-center min-h-screen bg-[#f2f4f7]">
                 <div className="text-center">
-                    <h2 className="text-slate-600 text-sm">{status}</h2>
+                    <h2 className="text-slate-500 text-sm font-medium">{status}</h2>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-slate-50">
-            <div className="text-center">
-                <div className="text-xl font-bold text-slate-900 mb-6">9대 로직 영문법</div>
-                <div className="flex justify-center mb-5">
-                    <div className="w-8 h-8 border-2 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
+        <div className="flex items-center justify-center min-h-screen bg-[#f2f4f7]">
+            <div className="bg-white rounded-[24px] border border-[#edf2f7] shadow-[0_10px_25px_rgba(0,0,0,0.03)] px-10 py-12 text-center">
+                <div className="text-xl font-extrabold text-[#2d3436] mb-8">9대 로직 영문법</div>
+                <div className="flex justify-center mb-6">
+                    <div className="w-10 h-10 border-3 border-primary-100 border-t-primary-600 rounded-full animate-spin" />
                 </div>
-                <div className="text-sm text-slate-400">{status}<span className="dots" /></div>
+                <div className="text-sm text-slate-400 font-medium">{status}<span className="dots" /></div>
             </div>
             <style jsx>{`
                 .dots::after {

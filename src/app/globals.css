@@ -13,7 +13,7 @@
   --color-primary-900: #312e81;
 
   --color-surface: #ffffff;
-  --color-surface-secondary: #f8fafc;
+  --color-surface-secondary: #f2f4f7;
   --color-surface-tertiary: #f1f5f9;
 
   --color-correct: #10b981;
@@ -24,5 +24,5 @@
 
 body {
   background-color: var(--color-surface-secondary);
-  color: #1e293b;
+  color: #2d3436;
 }

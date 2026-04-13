@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getAllCompletions } from "@/lib/completion";
 
-const gradeConfig: Record<number, { label: string; sub: string; color: string; bg: string; bgDeep: string; text: string; textLight: string; border: string; badge: string; badgeText: string }> = {
-  7:  { label: "Bronze",      sub: "중1", color: "#b45309", bg: "bg-amber-50",   bgDeep: "bg-amber-600",  text: "text-amber-900",  textLight: "text-amber-600",  border: "border-amber-200/60",  badge: "bg-amber-100",  badgeText: "text-amber-700" },
-  8:  { label: "Silver",      sub: "중2", color: "#64748b", bg: "bg-slate-50",   bgDeep: "bg-slate-500",  text: "text-slate-800",  textLight: "text-slate-500",  border: "border-slate-200/60",  badge: "bg-slate-100",  badgeText: "text-slate-600" },
-  9:  { label: "Gold",        sub: "중3", color: "#ca8a04", bg: "bg-yellow-50",  bgDeep: "bg-yellow-500", text: "text-yellow-900", textLight: "text-yellow-600", border: "border-yellow-200/60", badge: "bg-yellow-100", badgeText: "text-yellow-700" },
-  10: { label: "Platinum",    sub: "고1", color: "#0891b2", bg: "bg-cyan-50",    bgDeep: "bg-cyan-600",   text: "text-cyan-900",   textLight: "text-cyan-600",   border: "border-cyan-200/60",   badge: "bg-cyan-100",   badgeText: "text-cyan-700" },
-  11: { label: "Diamond",     sub: "고2", color: "#4f46e5", bg: "bg-indigo-50",  bgDeep: "bg-indigo-600", text: "text-indigo-900", textLight: "text-indigo-600", border: "border-indigo-200/60", badge: "bg-indigo-100", badgeText: "text-indigo-700" },
-  12: { label: "Grandmaster", sub: "고3", color: "#dc2626", bg: "bg-red-50",     bgDeep: "bg-red-600",    text: "text-red-900",    textLight: "text-red-600",    border: "border-red-200/60",    badge: "bg-red-100",    badgeText: "text-red-700" },
+const gradeConfig: Record<number, { label: string; color: string; light: string; headerBg: string }> = {
+  7:  { label: "Bronze",      color: "#b45309", light: "#fef3c7", headerBg: "#fffbeb" },
+  8:  { label: "Silver",      color: "#64748b", light: "#f1f5f9", headerBg: "#f8fafc" },
+  9:  { label: "Gold",        color: "#ca8a04", light: "#fef9c3", headerBg: "#fefce8" },
+  10: { label: "Platinum",    color: "#0891b2", light: "#cffafe", headerBg: "#ecfeff" },
+  11: { label: "Diamond",     color: "#6366f1", light: "#e0e7ff", headerBg: "#eef2ff" },
+  12: { label: "Grandmaster", color: "#dc2626", light: "#fee2e2", headerBg: "#fef2f2" },
 };
 
 const logicNames: Record<number, string> = {
@@ -56,55 +56,63 @@ export default function GradePage() {
 
   return (
     <div>
-      {/* Color header */}
-      <div className={`-mx-5 -mt-8 px-5 pt-8 pb-6 mb-6 ${config.bg}`}>
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl ${config.bgDeep} flex items-center justify-center`}>
-            <span className="text-white font-bold text-sm">{grade > 9 ? `${grade - 9}` : `${grade - 6}`}</span>
+      {/* Header */}
+      <div className="-mx-5 -mt-8 px-6 pt-8 pb-6 mb-6 rounded-b-[24px]" style={{ backgroundColor: config.headerBg }}>
+        <div className="flex items-center gap-4">
+          <div
+            className="w-[50px] h-[50px] rounded-[14px] flex items-center justify-center font-extrabold text-lg"
+            style={{ backgroundColor: config.light, color: config.color }}
+          >
+            {config.label.charAt(0)}
           </div>
-          <div>
-            <h1 className={`text-xl font-bold ${config.text}`}>{config.label}</h1>
-            <p className={`text-xs ${config.textLight}`}>{config.sub}</p>
-          </div>
+          <h1 className="text-xl font-extrabold" style={{ color: config.color }}>
+            {config.label}
+          </h1>
         </div>
       </div>
 
       {/* Logic list */}
-      <div className="flex flex-col gap-2.5 pb-16">
+      <div className="grid grid-cols-2 gap-3 pb-20">
         {logics.map((logic) => {
           const count = completions[logic.logic_no] || 0;
           return (
             <Link
               key={logic.logic_no}
               href={`/grade/${grade}/logic/${logic.logic_no}`}
-              className={`group flex items-center gap-4 ${config.bg} rounded-xl px-4 py-3.5 border ${config.border} hover:shadow-md active:scale-[0.97] transition-all duration-150`}
+              className="group bg-white rounded-[20px] border border-[#edf2f7] shadow-[0_10px_25px_rgba(0,0,0,0.03)] overflow-hidden hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(0,0,0,0.08)] transition-all duration-300"
             >
-              <div className={`w-9 h-9 rounded-lg ${config.badge} flex items-center justify-center text-sm font-bold ${config.badgeText}`}>
-                {logic.logic_no}
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className={`font-medium ${config.text} text-[15px]`}>
+              <div className="h-[3px]" style={{ backgroundColor: config.color }} />
+              <div className="p-4">
+                <div
+                  className="w-10 h-10 rounded-[12px] flex items-center justify-center text-sm font-extrabold mb-2.5"
+                  style={{ backgroundColor: config.light, color: config.color }}
+                >
+                  {logic.logic_no}
+                </div>
+                <div className="font-bold text-[#2d3436] text-sm leading-snug">
                   {logicNames[logic.logic_no] || logic.name}
-                </span>
+                </div>
+                <div className="mt-2">
+                  {count > 0 ? (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: config.light, color: config.color }}>
+                      {count}회 완료
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-medium text-slate-300">미학습</span>
+                  )}
+                </div>
               </div>
-              {count > 0 ? (
-                <span className={`text-xs font-semibold ${config.badgeText} ${config.badge} px-2.5 py-0.5 rounded-full`}>
-                  {count}회
-                </span>
-              ) : (
-                <span className="text-xs text-slate-300">미학습</span>
-              )}
             </Link>
           );
         })}
       </div>
 
-      {/* Floating back button */}
+      {/* Floating back */}
       <Link
         href="/"
-        className="fixed bottom-6 left-6 w-11 h-11 bg-white border border-slate-200 rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 active:scale-90 transition-all z-50"
+        className="fixed bottom-6 left-6 w-12 h-12 bg-white border border-[#edf2f7] rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.08)] flex items-center justify-center hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] hover:-translate-y-1 active:scale-90 transition-all duration-300 z-50"
       >
-        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
       </Link>

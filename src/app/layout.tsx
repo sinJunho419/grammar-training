@@ -4,7 +4,7 @@ import "./globals.css";
 
 const notoSansKR = Noto_Sans_KR({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${notoSansKR.className} antialiased min-h-screen`}>
-        <main className="max-w-lg mx-auto px-5 py-8">
+        <main className="max-w-xl mx-auto px-5 py-8">
           {children}
         </main>
       </body>
